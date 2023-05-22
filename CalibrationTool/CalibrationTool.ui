@@ -20,17 +20,17 @@
    <widget class="QListWidget" name="imageList">
     <property name="geometry">
      <rect>
-      <x>50</x>
+      <x>40</x>
       <y>140</y>
-      <width>250</width>
-      <height>480</height>
+      <width>300</width>
+      <height>490</height>
      </rect>
     </property>
    </widget>
    <widget class="QPushButton" name="openCam">
     <property name="geometry">
      <rect>
-      <x>370</x>
+      <x>380</x>
       <y>50</y>
       <width>93</width>
       <height>28</height>
@@ -43,7 +43,7 @@
    <widget class="QPushButton" name="takePic">
     <property name="geometry">
      <rect>
-      <x>520</x>
+      <x>530</x>
       <y>50</y>
       <width>93</width>
       <height>28</height>
@@ -56,7 +56,7 @@
    <widget class="QPushButton" name="closeCam">
     <property name="geometry">
      <rect>
-      <x>660</x>
+      <x>670</x>
       <y>50</y>
       <width>93</width>
       <height>28</height>
@@ -66,26 +66,14 @@
      <string>close</string>
     </property>
    </widget>
-   <widget class="QLabel" name="imageWindow">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
+   <widget class="QGraphicsView" name="imageWindow">
     <property name="geometry">
      <rect>
-      <x>390</x>
+      <x>380</x>
       <y>140</y>
-      <width>640</width>
-      <height>480</height>
+      <width>650</width>
+      <height>490</height>
      </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QLabel#imageWindow {
-    border: 1px solid black;
-    padding: 5px;
-}</string>
-    </property>
-    <property name="text">
-     <string/>
     </property>
    </widget>
   </widget>

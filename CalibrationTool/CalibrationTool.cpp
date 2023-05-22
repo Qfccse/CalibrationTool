@@ -30,7 +30,7 @@ void CalibrationTool::initImageList() {
     //设置QListWidget中单元项的图片大小
     ui.imageList->setIconSize(QSize(IMAGE_LIST_WIDTH, IMAGE_LIST_WIDTH));
     //设置QListWidget中单元项的间距
-    ui.imageList->setSpacing(10);
+    ui.imageList->setSpacing(IMAGE_PADDING);
     //设置自动适应布局调整(Adjust适应，Fixed不适应)，默认不适应
     ui.imageList->setResizeMode(QListWidget::Adjust);
     //设置不能移动
@@ -62,7 +62,15 @@ void CalibrationTool::readFarme()
     // 将抓取到的帧，转换为QImage格式。QImage::Format_RGB888不同的摄像头用不同的格式。
     QImage image(flipedFrame.data, flipedFrame.cols, flipedFrame.rows, flipedFrame.step, QImage::Format_RGB888);
 
-    ui.imageWindow->setPixmap(QPixmap::fromImage(image));  // 将图片显示到label上
+    //ui.imageWindow->setPixmap(QPixmap::fromImage(image));  // 将图片显示到label上
+    //创建显示容器
+    QGraphicsScene* scene = new QGraphicsScene;
+    //向容器中添加文件路径为fileName（QString类型）的文件
+    scene->addPixmap(QPixmap::fromImage(image));
+    //借助graphicsView（QGraphicsView类）控件显示容器的内容
+    ui.imageWindow->setScene(scene);
+    //开始显示
+    ui.imageWindow->show();
 }
 
 
@@ -92,7 +100,11 @@ void CalibrationTool::closeCamara()
 {
     timer->stop();         // 停止读取数据。
     cam.release();
-    ui.imageWindow->clear();
+    QGraphicsScene* scene = new QGraphicsScene;
+    ui.imageWindow->setScene(scene);
+    //开始显示
+    ui.imageWindow->show();
+    //ui.imageWindow->clear();
 }
 
 void CalibrationTool::createAction()

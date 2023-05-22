@@ -7,3 +7,4 @@ using namespace cv;
 #define IMAGE_WIN_HEIGHT 480
 #define IMAGE_WIN_WIDTH 640
 #define SAMPLE_RATE 30
+#define IMAGE_PADDING 9
