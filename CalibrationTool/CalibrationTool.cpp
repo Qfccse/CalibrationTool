@@ -1,5 +1,6 @@
 #include "CalibrationTool.h"
 #include "Const.h"
+#include "Calibrate.h"
 
 CalibrationTool::CalibrationTool(QWidget *parent)
     : QMainWindow(parent)
@@ -14,6 +15,7 @@ CalibrationTool::CalibrationTool(QWidget *parent)
     connect(ui.openCam, SIGNAL(clicked()), this, SLOT(openCamara()));
     connect(ui.takePic, SIGNAL(clicked()), this, SLOT(takingPictures()));
     connect(ui.closeCam, SIGNAL(clicked()), this, SLOT(closeCamara()));
+    connect(ui.calib, SIGNAL(clicked()), this, SLOT(startCalibrate()));
 }
 
 CalibrationTool::~CalibrationTool()
@@ -107,6 +109,13 @@ void CalibrationTool::closeCamara()
     //ui.imageWindow->clear();
 }
 
+
+void CalibrationTool::startCalibrate() {
+    if (this->fileNames.length() == 0) {
+        return;
+    }
+    calibrate(fileNames);
+}
 void CalibrationTool::createAction()
 {
     //创建打开文件动作
@@ -160,15 +169,19 @@ void CalibrationTool::selectFile() {
     fileDialog->setViewMode(QFileDialog::Detail);
     //打印所有选择的文件的路径
     if (fileDialog->exec())
+    {
         fileNames = fileDialog->selectedFiles();
+    }
     showImageList();
     for (auto tmp : fileNames)
+    {
         qDebug() << tmp << endl;
+    }
 }
 
 /***************************************
 *Qt中使用文件选择对话框步骤如下:
-*1.定义一个QListWidget对象
+* 1.定义一个QListWidget对象
 * 2.设置ViewMode等属性
 * 3.定义单元项并添加到QL istWidget中
 * 4.调用QListWidget对象的show()方法

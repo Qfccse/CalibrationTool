@@ -35,6 +35,7 @@ public slots:
     void closeCamara();     // 关闭摄像头。
     void takingPictures();  // 拍照
     void fileOpenActionSlot();//打开文 件动作对应的槽函数
+    void startCalibrate();
 private:
     void initImageList();
     void createAction();
@@ -49,8 +50,7 @@ private:
     //用缩略图显示图片
 private:
     QAction* fileOpenAction; //创建一个QAction指针， 打开文件动作
-    QMenu* menu;
-    //创建一个QMenu指针
+    QMenu* menu;  //创建一个QMenu指针
 private:
     QStringList fileNames;
 };

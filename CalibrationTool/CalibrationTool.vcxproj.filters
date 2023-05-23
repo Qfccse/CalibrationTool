@@ -40,9 +40,15 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Calibrate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Const.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Calibrate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

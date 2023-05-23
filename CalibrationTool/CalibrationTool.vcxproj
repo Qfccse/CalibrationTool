@@ -93,10 +93,12 @@
     <QtRcc Include="CalibrationTool.qrc" />
     <QtUic Include="CalibrationTool.ui" />
     <QtMoc Include="CalibrationTool.h" />
+    <ClCompile Include="Calibrate.cpp" />
     <ClCompile Include="CalibrationTool.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Calibrate.h" />
     <ClInclude Include="Const.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
