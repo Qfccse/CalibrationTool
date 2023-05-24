@@ -112,9 +112,19 @@ void CalibrationTool::closeCamara()
 
 void CalibrationTool::startCalibrate() {
     if (this->fileNames.length() == 0) {
+        // 弹窗提示未添加图片
         return;
     }
+    // 当图片小于10张的时候，提示是否继续标定
+    //ui.openCam->setEnabled(false);
+    //ui.closeCam->setEnabled(false);
+    //ui.takePic->setEnabled(false);
+    //ui.calib->setEnabled(false);
     calibrate(fileNames);
+    //ui.openCam->setEnabled(true);
+    //ui.closeCam->setEnabled(true);
+    //ui.takePic->setEnabled(true);
+    //ui.calib->setEnabled(true);
 }
 void CalibrationTool::createAction()
 {
