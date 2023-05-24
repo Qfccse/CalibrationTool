@@ -17,6 +17,7 @@ void calibrate(QStringList fileNames) {
     for (size_t i = 0; i < fileNames.size(); i++)
     {
         image = imread(fileNames[i].toStdString(), IMREAD_COLOR);
+        print(image);
         cvtColor(image, gray, COLOR_BGR2GRAY);
 
         // 3. 读入图像数据，并提取角点
@@ -49,7 +50,7 @@ void calibrate(QStringList fileNames) {
     calibrateCamera(objectPoints, imagePoints, gray.size(), cameraMatrix, distCoeffs, rvecs, tvecs);
     // fisheye::calibrate(objectPoints, imagePoints, image.size(), cameraMatrix, distCoeffs, rvecs, tvecs);
     // 保存相机内参矩阵和畸变系数到文本文件
-    cv::FileStorage fs("D:\\workspace\\cv\\camera_parameters.txt", cv::FileStorage::WRITE);
+    cv::FileStorage fs("E:\\cv\\camera_parameters.txt", cv::FileStorage::WRITE);
     fs << "CameraMatrix" << cameraMatrix;
     fs << "DistortionCoefficients" << distCoeffs;
     fs.release();

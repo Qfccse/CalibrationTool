@@ -181,6 +181,9 @@ void CalibrationTool::selectFile() {
     if (fileDialog->exec())
     {
         fileNames = fileDialog->selectedFiles();
+        for (int i = 0; i < fileNames.length(); i++) {
+            fileNames[i] = QDir::toNativeSeparators(fileNames[i]);
+        }
     }
     showImageList();
     for (auto tmp : fileNames)
