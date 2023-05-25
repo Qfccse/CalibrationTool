@@ -1,5 +1,13 @@
 #include "Calibrate.h"
 
+double calculateReprojectionError(const vector<Point3f>& objectPoints,
+    const vector<Point2f>& imagePoints,
+    const Mat& cameraMatrix,
+    const Mat& distCoeffs,
+    const Mat& rvec,
+    const Mat& tvec,
+    const int cameraType);
+
 CalibrateResults calibrate(QStringList fileNames, int cameraType) {
     // 1. 准备标定棋盘图像
     int boardWidth = 9;  // 棋盘格横向内角点数量

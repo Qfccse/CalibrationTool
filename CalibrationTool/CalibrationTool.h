@@ -12,6 +12,7 @@
 #include <QListWidget>
 #include <QMessageBox>
 #include <QHBoxLayout>
+#include "Const.h"
 
 class CalibrationTool : public QMainWindow
 {

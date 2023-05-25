@@ -16,6 +16,7 @@ CalibrationTool::CalibrationTool(QWidget* parent)
     connect(ui.takePic, SIGNAL(clicked()), this, SLOT(takingPictures()));
     connect(ui.closeCam, SIGNAL(clicked()), this, SLOT(closeCamara()));
     connect(ui.calib, SIGNAL(clicked()), this, SLOT(startCalibrate()));
+    connect(ui.open, SIGNAL(clicked()), this, SLOT(fileOpenActionSlot()));
     // connect(ui.imageList);
     connect(ui.imageList, &QListWidget::itemClicked, this, &CalibrationTool::handleListItemClick);
 
@@ -26,9 +27,9 @@ CalibrationTool::~CalibrationTool()
 
 
 void CalibrationTool::initImageList() {
-    createAction();
-    createMenu();
-    createContentMenu();
+    //createAction();
+    //createMenu();
+    //createContentMenu();
     //定义QListWidget对象
     //设置QListWidget的显示模式
     ui.imageList->setViewMode(QListView::IconMode);
@@ -133,12 +134,13 @@ void CalibrationTool::startCalibrate() {
     //ui.closeCam->setEnabled(false);
     //ui.takePic->setEnabled(false);
     //ui.calib->setEnabled(false);
+    // 
     this->calibResults = calibrate(fileNames, NORMAL_CAM);
-    qDebug() 
-        << this->calibResults.rvecs
-        << this->calibResults.tvecs
-        << this->calibResults.rvecs
-        << endl;
+    //qDebug() 
+       // << this->calibResults.rvecs
+        //<< this->calibResults.tvecs
+        //<< this->calibResults.rvecs
+        //<< endl;
     //ui.openCam->setEnabled(true);
     //ui.closeCam->setEnabled(true);
     //ui.takePic->setEnabled(true);
