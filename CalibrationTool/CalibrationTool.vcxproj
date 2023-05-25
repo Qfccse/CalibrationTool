@@ -36,7 +36,7 @@
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
-    <QtInstall>mscv2017_64</QtInstall>
+    <QtInstall>msvc2017_64</QtInstall>
     <QtModules>core;gui;widgets</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
@@ -55,12 +55,19 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <IncludePath>C:\programming\opencv-4.5.1\opencv\build\include;C:\programming\opencv-4.5.1\opencv\build\include\opencv2;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\programming\opencv-4.5.1\opencv\build\x64\vc15\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\ENVIRONMENT\LIB\opencv-4.5.1\opencv\build\include;D:\ENVIRONMENT\LIB\opencv-4.5.1\opencv\build\include\opencv2;C:\programming\opencv-4.5.1\opencv\build\include\opencv2;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\ENVIRONMENT\LIB\opencv-4.5.1\opencv\build\x64\vc15\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <IncludePath>D:\ENVIRONMENT\LIB\opencv-4.5.1\opencv\build\include\opencv2;D:\ENVIRONMENT\LIB\opencv-4.5.1\opencv\build\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\ENVIRONMENT\LIB\opencv-4.5.1\opencv\build\x64\vc15\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Link>
+      <AdditionalDependencies>opencv_world451d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>
       <AdditionalDependencies>opencv_world451d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
