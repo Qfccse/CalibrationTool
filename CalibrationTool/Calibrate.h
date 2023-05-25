@@ -1,13 +1,4 @@
 #pragma once
-#include <iostream>
-#include <string>
-#include <time.h> 
-#include <opencv2/opencv.hpp>
-#include <QString>
-#include <QStringList>
+#include "Const.h"
 
-using namespace std;
-using namespace cv;
-
-
-void calibrate(QStringList fileNames);
+CalibrateResults calibrate(QStringList fileNames, int cameraType);

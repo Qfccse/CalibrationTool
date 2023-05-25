@@ -36,6 +36,7 @@ public slots:
     void takingPictures();  // 拍照
     void fileOpenActionSlot();//打开文 件动作对应的槽函数
     void startCalibrate();
+    void handleListItemClick(QListWidgetItem* item); // 给上传的图片添加点击事件
 private:
     void initImageList();
     void createAction();
@@ -53,4 +54,5 @@ private:
     QMenu* menu;  //创建一个QMenu指针
 private:
     QStringList fileNames;
+    CalibrateResults calibResults;
 };

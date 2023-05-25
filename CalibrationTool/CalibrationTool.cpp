@@ -2,7 +2,7 @@
 #include "Const.h"
 #include "Calibrate.h"
 
-CalibrationTool::CalibrationTool(QWidget *parent)
+CalibrationTool::CalibrationTool(QWidget* parent)
     : QMainWindow(parent)
 {
     /*初始化*/
@@ -16,6 +16,9 @@ CalibrationTool::CalibrationTool(QWidget *parent)
     connect(ui.takePic, SIGNAL(clicked()), this, SLOT(takingPictures()));
     connect(ui.closeCam, SIGNAL(clicked()), this, SLOT(closeCamara()));
     connect(ui.calib, SIGNAL(clicked()), this, SLOT(startCalibrate()));
+    // connect(ui.imageList);
+    connect(ui.imageList, &QListWidget::itemClicked, this, &CalibrationTool::handleListItemClick);
+
 }
 
 CalibrationTool::~CalibrationTool()
@@ -63,7 +66,6 @@ void CalibrationTool::readFarme()
     cvtColor(flipedFrame, flipedFrame, cv::COLOR_BGR2RGB);
     // 将抓取到的帧，转换为QImage格式。QImage::Format_RGB888不同的摄像头用不同的格式。
     QImage image(flipedFrame.data, flipedFrame.cols, flipedFrame.rows, flipedFrame.step, QImage::Format_RGB888);
-
     //ui.imageWindow->setPixmap(QPixmap::fromImage(image));  // 将图片显示到label上
     //创建显示容器
     QGraphicsScene* scene = new QGraphicsScene;
@@ -100,7 +102,7 @@ void CalibrationTool::takingPictures()
 ********************************/
 void CalibrationTool::closeCamara()
 {
-    timer->stop();         // 停止读取数据。
+    timer->stop(); // 停止读取数据。
     cam.release();
     QGraphicsScene* scene = new QGraphicsScene;
     ui.imageWindow->setScene(scene);
@@ -111,21 +113,38 @@ void CalibrationTool::closeCamara()
 
 
 void CalibrationTool::startCalibrate() {
+    // 弹窗提示未添加图片
     if (this->fileNames.length() == 0) {
-        // 弹窗提示未添加图片
+        QMessageBox::warning(this, tr("warning"),
+            tr("You haven't upload any image"));
+
         return;
     }
     // 当图片小于10张的时候，提示是否继续标定
+    if (this->fileNames.length() <= 10) {
+        int reply = QMessageBox::warning(this, tr("warning"),
+            tr("You should upload more than 10 images, would you want to continue?"),
+            QMessageBox::Yes, QMessageBox::No);
+        if (reply == QMessageBox::No) {
+            return;
+        }
+    }
     //ui.openCam->setEnabled(false);
     //ui.closeCam->setEnabled(false);
     //ui.takePic->setEnabled(false);
     //ui.calib->setEnabled(false);
-    calibrate(fileNames);
+    this->calibResults = calibrate(fileNames, NORMAL_CAM);
+    qDebug() 
+        << this->calibResults.rvecs
+        << this->calibResults.tvecs
+        << this->calibResults.rvecs
+        << endl;
     //ui.openCam->setEnabled(true);
     //ui.closeCam->setEnabled(true);
     //ui.takePic->setEnabled(true);
     //ui.calib->setEnabled(true);
 }
+
 void CalibrationTool::createAction()
 {
     //创建打开文件动作
@@ -137,15 +156,18 @@ void CalibrationTool::createAction()
     //关联打开文件动作的信号和槽
     connect(fileOpenAction, SIGNAL(triggered()), this, SLOT(fileOpenActionSlot()));
 }
+
 void CalibrationTool::createMenu()
 {
     menu = this->menuBar()->addMenu(tr("Add Images"));
     menu->addAction(fileOpenAction);
 }
+
 void CalibrationTool::createContentMenu() {
     this->addAction(fileOpenAction);
     this->setContextMenuPolicy(Qt::ActionsContextMenu);
 }
+
 void CalibrationTool::fileOpenActionSlot()
 {
     selectFile();
@@ -210,8 +232,19 @@ void CalibrationTool::showImageList() {
         imageItem->setIcon(QIcon(tmp));
         //重新设置单元项图片的宽度和高度
         imageItem->setSizeHint(QSize(IMAGE_LIST_WIDTH, IMAGE_LIST_WIDTH * ratio));
+        //imageItem->setText(QFileInfo::fileName(tmp));
+        
         ui.imageList->addItem(imageItem);
     }
     //显示QListWidget
     ui.imageList->show();
+}
+
+void CalibrationTool::handleListItemClick(QListWidgetItem* item)
+{
+    // 处理 QListWidgetItem 的点击事件
+    // 可以获取 item 的数据、索引等进行处理
+    // 示例：获取 item 的文本
+    QString text = item->text();
+    qDebug() << "Clicked item text: " << text;
 }
