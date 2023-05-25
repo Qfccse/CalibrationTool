@@ -75,16 +75,16 @@ CalibrationTool::CalibrationTool(QWidget* parent)
     chart->legend()->setAlignment(Qt::AlignBottom); /* 显示在底部 */
 
 
-    QGraphicsView* transformGramView = ui.transformGram; // transformGram 是之前在 UI 文件中定义的 QGraphicsView 组件
-    QGraphicsScene* scene = new QGraphicsScene(transformGramView); // 创建一个场景对象，关联到 transformGramView 组件
+    QGraphicsView* histogramView = ui.histogram; // histogram 是之前在 UI 文件中定义的 QGraphicsView 组件
+    QGraphicsScene* scene = new QGraphicsScene(histogramView); // 创建一个场景对象，关联到 histogramView 组件
 
-    // 获取 transformGram 组件的位置和尺寸
-    QRect transformGramGeometry = ui.transformGram->geometry();
+    // 获取 histogram 组件的位置和尺寸
+    QRect histogramGeometry = ui.histogram->geometry();
 
-    // 将 chartView 的位置和尺寸设置为与 transformGram 相同
-    chartView->setGeometry(transformGramGeometry);
+    // 将 chartView 的位置和尺寸设置为与 histogram 相同
+    chartView->setGeometry(histogramGeometry);
 
-    transformGramView->setScene(scene);
+    histogramView->setScene(scene);
     scene->addWidget(chartView); // 将 chartView 添加到场景中
 
 }
