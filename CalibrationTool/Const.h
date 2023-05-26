@@ -1,7 +1,8 @@
 #pragma once
 #include <iostream>
 #include <string>
-#include <time.h> 
+#include <time.h>
+#include <ctime> 
 #include <vector>
 #include <unordered_map>
 #include <opencv2/opencv.hpp>

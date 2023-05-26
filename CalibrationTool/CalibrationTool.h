@@ -12,6 +12,8 @@
 #include <QListWidget>
 #include <QMessageBox>
 #include <QHBoxLayout>
+#include <QProgressDialog>
+#include <QDateTime>
 #include "Const.h"
 
 class CalibrationTool : public QMainWindow
@@ -38,19 +40,26 @@ public slots:
     void fileOpenActionSlot();//打开文 件动作对应的槽函数
     void startCalibrate();
     void handleListItemClick(QListWidgetItem* item); // 给上传的图片添加点击事件
+    void updateProgress(int value); //相机标定的进度条更新函数
+signals:
+    void progressUpdate(int value); // 相机标定的进度条的进度序号
 private:
     void initImageList();
+    void createProgressBar(bool isBatch);
 private:
     void selectFile();
     //弹出选择文件对话框
     void showImageList();
     //用缩略图显示图片
 private:
-    QAction* fileOpenAction; //创建一个QAction指针， 打开文件动作
-    QMenu* menu;  //创建一个QMenu指针
+    QAction* fileOpenAction = nullptr; //创建一个QAction指针， 打开文件动作
+    QMenu* menu = nullptr;  //创建一个QMenu指针
+    QProgressDialog* progressBar = nullptr; // 进度条
 private:
     QStringList fileNames;
     // FullCalibrateResults fullCalibResults;
     CalibrateResults calibResults;
     vector<vector<cv::Point2f>> imageCorners;
+    std::unordered_map<int, QString> imageNameMap;
+    std::unordered_map<int, cv::Mat> camImageMap;
 };

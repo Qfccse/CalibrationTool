@@ -92,14 +92,32 @@ void CalibrationTool::takingPictures()
     Mat flipedFrame;
     flip(frame, flipedFrame, 1);
     cvtColor(flipedFrame, flipedFrame, cv::COLOR_BGR2RGB);
+
+    // 这里设置Mat在map里的key为imageNameMap的size
+    this->camImageMap[this->imageNameMap.size()] = flipedFrame;
+    this->imageNameMap[this->imageNameMap.size()] = "";
+
     QImage image((const uchar*)flipedFrame.data, flipedFrame.size().width, flipedFrame.size().height, QImage::Format_RGB888);
     QPixmap pixmap = QPixmap::fromImage(image);
     double ratio = static_cast<double>(image.height()) / image.width();
     QListWidgetItem* item = new QListWidgetItem();
     item->setIcon(QIcon(pixmap)); // 或者 item->setIcon(QIcon::fromImage(image));
     item->setSizeHint(QSize(IMAGE_LIST_WIDTH, IMAGE_LIST_WIDTH * ratio));
+    item->setText(QString::number(this->imageNameMap.size()));
+
+    QDateTime currentDateTime = QDateTime::currentDateTime(); // 获取当前时间
+    qint64 timestamp = currentDateTime.toSecsSinceEpoch(); // 转换为时间戳（秒级别）
+    QString timestampText = QString::number(timestamp); // 将时间戳转换为字符串
+    
+    item->setTextAlignment(Qt::AlignVCenter);
+    item->setToolTip(timestampText + ".tmp.png");
+
     ui.imageList->addItem(item);
+
+    // 拍照后检测角点
+    this->imageCorners.push_back(findOneCorners(flipedFrame, BOARD_SIZE));
 }
+
 
 /*******************************
 ***关闭摄像头，释放资源，必须释放***
@@ -140,7 +158,7 @@ void CalibrationTool::startCalibrate() {
     // 
     cv::Mat image = cv::imread(this->fileNames[0].toStdString());
     // this->fullCalibResults = calibrate(fileNames, NORMAL_CAM);
-    this->calibResults = calibarteWithCorners(this->imageCorners,image.size(),BOARD_SIZE,NORMAL_CAM);
+    this->calibResults = calibarteWithCorners(this->imageCorners, image.size(), BOARD_SIZE, NORMAL_CAM);
     //qDebug() 
        // << this->calibResults.rvecs
         //<< this->calibResults.tvecs
@@ -151,19 +169,51 @@ void CalibrationTool::startCalibrate() {
     //ui.takePic->setEnabled(true);
     //ui.calib->setEnabled(true);
 }
+// 在窗口类的实现文件中实现槽函数来更新进度条
+void CalibrationTool::updateProgress(int value)
+{
+    // 更新进度条的值
+    this->progressBar->setValue(value);
+}
+
 
 void CalibrationTool::fileOpenActionSlot()
 {
     selectFile();
-    /*int reply = QMessageBox::warning(this, tr("warning"),tr("cam want to open file explore"),QMessageBox::Yes , QMessageBox::No);
-    if (reply == QMessageBox::Yes) {
-        selectFile();
-    }
-    else
-    {
-        return;
-    }*/
 }
+
+// 创建进度条
+void CalibrationTool::createProgressBar(bool isBatch) {
+    // 创建进度条对话框
+    // this->progressBar = new QProgressDialog ("Checking corner points...", "Cancel", 0, 100);
+    // this->progressBar->setWindowTitle("Progress");
+    if (!this->progressBar)
+    {
+        this->progressBar = new QProgressDialog("Checking corner points...", nullptr, 0, 100);
+        this->progressBar->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+        this->progressBar->setWindowModality(Qt::WindowModal);
+        this->progressBar->setMinimumDuration(0);
+        this->progressBar->setCancelButton(nullptr); // 移除取消按钮
+        Qt::WindowFlags flags = this->progressBar->windowFlags();
+        flags &= ~Qt::WindowCloseButtonHint;  // 移除关闭按钮
+        this->progressBar->setWindowFlags(flags);
+
+        // 设置固定的宽度和高度
+        this->progressBar->setFixedSize(250, 80);
+        this->progressBar->setStyleSheet(
+            "QProgressBar { background-color: white; text-align: center; border-radius:5px; font-weight:bolder }"
+            "QProgressBar::chunk { background-color:#3366CC; border-radius:5px }"
+        );
+    }
+
+    if (isBatch)
+    {
+        connect(this, SIGNAL(progressUpdate(int)), this, SLOT(updateProgress(int)));
+    }
+
+    this->progressBar->show();
+}
+
 
 /***************************************
 * Qt中使用文件选择对话框步骤如下:
@@ -186,11 +236,21 @@ void CalibrationTool::selectFile() {
     //打印所有选择的文件的路径
     if (fileDialog->exec())
     {
+        // 选择图片上传的时候检测
+        // this->createProgressBar(false);
+
+        // 这里每次都会重新赋值，所以下面用map存
         fileNames = fileDialog->selectedFiles();
+        int len = this->imageNameMap.size();
         for (int i = 0; i < fileNames.length(); i++) {
             fileNames[i] = QDir::toNativeSeparators(fileNames[i]);
+            this->imageNameMap[i + len] = fileNames[i];
+            // 在上传图片的时候检测角点
+            // this->imageCorners.push_back(findOneCorners(fileNames[i], BOARD_SIZE));
+            // this->progressBar->setValue((i+1)*100/ fileNames.length());
         }
     }
+
     showImageList();
     for (auto tmp : fileNames)
     {
@@ -207,32 +267,39 @@ void CalibrationTool::selectFile() {
 * ****************************************/
 void CalibrationTool::showImageList() {
 
-    int i = imageCorners.size() + 1;
-    for (auto tmp : fileNames) {
+    int stIndex = this->imageCorners.size();
+    this->createProgressBar(false);
+    for (int i = 0; i < fileNames.length(); i++) {
         // 定义QListWidgetItem对象
         QListWidgetItem* imageItem = new QListWidgetItem;
-        QImage image(tmp);
+        QImage image(fileNames[i]);
         double ratio = static_cast<double>(image.height()) / image.width();
         // qDebug() << height << endl;
-        imageItem->setIcon(QIcon(tmp));
+        imageItem->setIcon(QIcon(fileNames[i]));
         //重新设置单元项图片的宽度和高度
         imageItem->setSizeHint(QSize(IMAGE_LIST_WIDTH, IMAGE_LIST_WIDTH * ratio));
-        imageItem->setText(QString::number(i));
+        imageItem->setText(QString::number(stIndex + i + 1));
 
-        QFileInfo fileInfo(tmp);
-        // 使用 fileName() 函数获取文件名
+        // 悬浮显示文件名
+        QFileInfo fileInfo(fileNames[i]);
         QString fileName = fileInfo.fileName();
-        //imageItem->setText(QString::number(i) + ":  " + fileName);
-        //imageItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         imageItem->setTextAlignment(Qt::AlignVCenter);
         imageItem->setToolTip(fileName);
         ui.imageList->addItem(imageItem);
-        i++;
+
+        //在上传图片的时候检测角点
+        this->imageCorners.push_back(findOneCorners(fileNames[i], BOARD_SIZE));
+        this->progressBar->setValue((i + 1) * 100 / fileNames.length());
+
     }
+    //this->progressBar->setValue(100);
 
     //显示QListWidget
     ui.imageList->show();
-    this->imageCorners = findCorners(fileNames,BOARD_SIZE);
+    // 批量检测角点
+    // this->createProgressBar(true);
+    // this->imageCorners = findCorners(fileNames,BOARD_SIZE,this);
+
 }
 
 void CalibrationTool::handleListItemClick(QListWidgetItem* item)
@@ -240,14 +307,25 @@ void CalibrationTool::handleListItemClick(QListWidgetItem* item)
     // 处理 QListWidgetItem 的点击事件
     // 可以获取 item 的数据、索引等进行处理
     // 示例：获取 item 的文本
-    int index = item->text().toInt();
-    qDebug() << "Clicked item text: " << index - 1 << "\n";
+    //int index = item->text().toInt();
+    int index = ui.imageList->row(item);
+
+    qDebug() << "Clicked item text: " << index << "\n";
     qDebug() << this->imageCorners.size() << "\n";
-    vector<cv::Point2f> corners = this->imageCorners[index - 1];
-    cv::Mat flipedFrame = cv::imread(this->fileNames[index - 1].toStdString());
+    vector<cv::Point2f> corners = this->imageCorners[index];
+    QString fileName = this->imageNameMap[index];
+    cv::Mat flipedFrame;
+    if (!fileName.isEmpty()) {
+        flipedFrame = cv::imread(fileName.toStdString());
+        // 将颜色格式从BGR转换为RGB
+        cvtColor(flipedFrame, flipedFrame, cv::COLOR_BGR2RGB);
+    }
+    else
+    {
+        flipedFrame = this->camImageMap[index];
+    }
     cv::drawChessboardCorners(flipedFrame, Size(9, 6), corners, !corners.empty());
-    // 将颜色格式从BGR转换为RGB
-    cvtColor(flipedFrame, flipedFrame, cv::COLOR_BGR2RGB);
+    
     // 将抓取到的帧，转换为QImage格式。QImage::Format_RGB888不同的摄像头用不同的格式。
     QImage image(flipedFrame.data, flipedFrame.cols, flipedFrame.rows, flipedFrame.step, QImage::Format_RGB888);
     //创建显示容器
