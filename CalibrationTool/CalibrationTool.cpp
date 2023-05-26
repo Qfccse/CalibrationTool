@@ -42,6 +42,8 @@ void CalibrationTool::initImageList() {
     ui.imageList->setResizeMode(QListWidget::Adjust);
     //设置不能移动
     ui.imageList->setMovement(QListWidget::Static);
+    //setAttribute(Qt::WA_Hover, true)
+    ui.imageList->setAttribute(Qt::WA_Hover, true);
 }
 void CalibrationTool::openCamara()
 {
@@ -215,14 +217,15 @@ void CalibrationTool::showImageList() {
         imageItem->setIcon(QIcon(tmp));
         //重新设置单元项图片的宽度和高度
         imageItem->setSizeHint(QSize(IMAGE_LIST_WIDTH, IMAGE_LIST_WIDTH * ratio));
-       // imageItem->setText(QString::number(i));
+        imageItem->setText(QString::number(i));
 
         QFileInfo fileInfo(tmp);
         // 使用 fileName() 函数获取文件名
         QString fileName = fileInfo.fileName();
-        imageItem->setText(QString::number(i) + ":  " + fileName);
+        //imageItem->setText(QString::number(i) + ":  " + fileName);
         //imageItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         imageItem->setTextAlignment(Qt::AlignVCenter);
+        imageItem->setToolTip(fileName);
         ui.imageList->addItem(imageItem);
         i++;
     }
@@ -237,7 +240,7 @@ void CalibrationTool::handleListItemClick(QListWidgetItem* item)
     // 处理 QListWidgetItem 的点击事件
     // 可以获取 item 的数据、索引等进行处理
     // 示例：获取 item 的文本
-    int index = item->text().split(':')[0].toInt();
+    int index = item->text().toInt();
     qDebug() << "Clicked item text: " << index - 1 << "\n";
     qDebug() << this->imageCorners.size() << "\n";
     vector<cv::Point2f> corners = this->imageCorners[index - 1];
