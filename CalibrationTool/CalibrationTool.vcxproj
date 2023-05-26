@@ -91,6 +91,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <QtRcc Include="CalibrationTool.qrc" />
+    <QtRcc Include="Resource.qrc" />
     <QtUic Include="CalibrationTool.ui" />
     <QtMoc Include="CalibrationTool.h" />
     <ClCompile Include="Calibrate.cpp" />

@@ -17,6 +17,7 @@ CalibrationTool::CalibrationTool(QWidget* parent)
     connect(ui.closeCam, SIGNAL(clicked()), this, SLOT(closeCamara()));
     connect(ui.calib, SIGNAL(clicked()), this, SLOT(startCalibrate()));
     connect(ui.open, SIGNAL(clicked()), this, SLOT(fileOpenActionSlot()));
+
     // connect(ui.imageList);
     connect(ui.imageList, &QListWidget::itemClicked, this, &CalibrationTool::handleListItemClick);
 

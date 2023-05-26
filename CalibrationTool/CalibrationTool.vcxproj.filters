@@ -35,6 +35,9 @@
     <ClCompile Include="CalibrationTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <QtRcc Include="Resource.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
