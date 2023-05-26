@@ -9,6 +9,7 @@
 #include <QtCharts/QBarSet>
 #include <QtCharts/QValueAxis>
 #include <QtCharts/QBarCategoryAxis>
+#include <QtCharts/QLineSeries>
 
 
 QT_CHARTS_USE_NAMESPACE
@@ -32,57 +33,79 @@ CalibrationTool::CalibrationTool(QWidget* parent)
     connect(ui.imageList, &QListWidget::itemClicked, this, &CalibrationTool::handleListItemClick);
 
     //画条形图
-    QBarSet* set0 = new QBarSet("Jane");
-    QBarSet* set1 = new QBarSet("John");
-    QBarSet* set2 = new QBarSet("Axel");
-    QBarSet* set3 = new QBarSet("Mary");
-    QBarSet* set4 = new QBarSet("Samantha");
-
-    *set0 << 1 << 2 << 3 << 4 << 5 << 6;
-    *set1 << 5 << 0 << 0 << 4 << 0 << 7;
-    *set2 << 3 << 5 << 8 << 13 << 8 << 5;
-    *set3 << 5 << 6 << 7 << 3 << 4 << 5;
-    *set4 << 9 << 7 << 5 << 3 << 1 << 2;
+    // 数据
+    QBarSet* projectionError = new QBarSet("Projection Error");
+    int data[] = { 5, 10, 15, 20, 25, 30, 35, 40, 45, 50 };
+    int dataSize = sizeof(data) / sizeof(int);
+    for (int i = 0; i < dataSize; ++i) {
+        *projectionError << data[i];
+    }
 
     QBarSeries* series = new QBarSeries();
-    series->append(set0);
-    series->append(set1);
-    series->append(set2);
-    series->append(set3);
-    series->append(set4);
+    series->append(projectionError);
 
     QChart* chart = new QChart();
     chart->addSeries(series);
-    chart->setTitle("Simple barchart example");
+    chart->setTitle("Projection Error");
+
     chart->setAnimationOptions(QChart::SeriesAnimations);
 
+    // 用于显示图表的窗口部件类
     QChartView* chartView = new QChartView(chart);
     chartView->setRenderHint(QPainter::Antialiasing);
 
-    QStringList categories;
-    categories << "Jan" << "Feb" << "Mar" << "Apr" << "May" << "Jun";
+    // XY轴标签
     QBarCategoryAxis* axisX = new QBarCategoryAxis();
-    axisX->append(categories);
+    axisX->setTitleText("Images");
+    axisX->append(QStringList() << "0" << "1" << "2" << "3" << "4" << "5" << "6" << "7" << "8" << "9"); // 添加X轴标签
     chart->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
 
     QValueAxis* axisY = new QValueAxis();
-    axisY->setRange(0, 15);
+    //axisY->setRange(0, 15);
+    axisY->setTitleText("Mean Erros in Pixels");
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
 
-    chart->legend()->setVisible(true);
-    chart->legend()->setAlignment(Qt::AlignBottom); /* 显示在底部 */
+    chart->legend()->setVisible(false);
+    //chart->legend()->setAlignment(Qt::AlignBottom); /* 显示在底部 */
 
 
+    // 画均值线
+    // 计算数据的均值
+    double mean = 0;
+    for (int i = 0; i < dataSize; ++i) {
+        mean += data[i];
+    }
+    mean /= dataSize;
+
+    // 创建一个QLineSeries对象来绘制均值线
+    QtCharts::QLineSeries* meanLine = new QtCharts::QLineSeries;
+    meanLine->setName("Mean");
+    meanLine->append(0, mean); // 添加起始点
+    meanLine->append(dataSize - 1, mean); // 添加结束点
+
+    // 将QLineSeries对象添加到QChart对象中
+    chart->addSeries(meanLine);
+
+    // 将QLineSeries对象绑定到X轴和Y轴
+    meanLine->attachAxis(axisX);
+    meanLine->attachAxis(axisY);
+
+
+    //ui.myChart->SetChart(chart);
+
+    // 展示图表
     QGraphicsView* histogramView = ui.histogram; // histogram 是之前在 UI 文件中定义的 QGraphicsView 组件
     QGraphicsScene* scene = new QGraphicsScene(histogramView); // 创建一个场景对象，关联到 histogramView 组件
+    //QGraphicsScene* scene = new QGraphicsScene(histogramView);
 
     // 获取 histogram 组件的位置和尺寸
     QRect histogramGeometry = ui.histogram->geometry();
 
     // 将 chartView 的位置和尺寸设置为与 histogram 相同
     chartView->setGeometry(histogramGeometry);
+    chartView->resize(300, 300);
 
     histogramView->setScene(scene);
     scene->addWidget(chartView); // 将 chartView 添加到场景中
