@@ -1,4 +1,5 @@
 #include "Calibrate.h"
+#include "CalibrationTool.h"
 
 FullCalibrateResults calibrate(const QStringList& fileNames, const int cameraType) {
     // 1. 准备标定棋盘图像
@@ -94,7 +95,9 @@ FullCalibrateResults calibrate(const QStringList& fileNames, const int cameraTyp
 }
 
 
-vector<vector<cv::Point2f>> findCorners(const QStringList& fileNames,const Size boardSize) {
+vector<vector<cv::Point2f>> findCorners(const QStringList& fileNames,
+    const Size boardSize, 
+    CalibrationTool* ui) {
     // 1. 准备标定棋盘图像
     float squareSize = 0.12f; // 棋盘格格子的大小，单位为米,随便设置，不影响相机内参计算
     vector<Point2f> corners;
@@ -123,9 +126,56 @@ vector<vector<cv::Point2f>> findCorners(const QStringList& fileNames,const Size 
             // 将 emptyVector 添加到 imageCorners
             res.push_back(emptyVector);
         }
+        // 更新进度
+        int progress = (i + 1) * 100 / fileNames.size();
+        emit ui->progressUpdate(progress); // 发送进度更新信号
     }
 
     return res;
+}
+
+vector<cv::Point2f> findOneCorners(const QString& fileName, const Size boardSize) {
+    float squareSize = 0.12f; // 棋盘格格子的大小，单位为米,随便设置，不影响相机内参计算
+    vector<Point2f> corners;
+    Mat image, gray;
+    image = imread(fileName.toStdString(), IMREAD_COLOR);
+    print(image);
+    cvtColor(image, gray, COLOR_BGR2GRAY);
+
+    bool found = findChessboardCorners(image, boardSize, corners, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE + CALIB_CB_FAST_CHECK);
+    if (found)
+    {
+        cornerSubPix(gray, corners, Size(11, 11), Size(-1, -1), TermCriteria(TermCriteria::EPS + TermCriteria::COUNT, 30, 0.1));
+        drawChessboardCorners(image, boardSize, corners, found);
+        return corners;
+    }
+    else
+    {
+        std::vector<cv::Point2f> emptyVector;
+        return emptyVector;
+    }
+}
+
+vector<cv::Point2f> findOneCorners(const Mat& imageFromCam, const Size boardSize) {
+    float squareSize = 0.12f; // 棋盘格格子的大小，单位为米,随便设置，不影响相机内参计算
+    vector<Point2f> corners;
+    Mat image, gray;
+    image = imageFromCam;
+    print(image);
+    cvtColor(image, gray, COLOR_BGR2GRAY);
+
+    bool found = findChessboardCorners(image, boardSize, corners, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE + CALIB_CB_FAST_CHECK);
+    if (found)
+    {
+        cornerSubPix(gray, corners, Size(11, 11), Size(-1, -1), TermCriteria(TermCriteria::EPS + TermCriteria::COUNT, 30, 0.1));
+        drawChessboardCorners(image, boardSize, corners, found);
+        return corners;
+    }
+    else
+    {
+        std::vector<cv::Point2f> emptyVector;
+        return emptyVector;
+    }
 }
 
 
