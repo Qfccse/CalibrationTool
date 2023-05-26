@@ -79,8 +79,8 @@
      <string/>
     </property>
     <property name="icon">
-     <iconset resource="Resource.qrc">
-      <normaloff>:/new/prefix1/picture/file.png</normaloff>:/new/prefix1/picture/file.png</iconset>
+     <iconset resource="CalibrationTool.qrc">
+      <normaloff>:/picture/picture/file.png</normaloff>:/picture/picture/file.png</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -141,8 +141,8 @@
      <string/>
     </property>
     <property name="icon">
-     <iconset resource="Resource.qrc">
-      <normaloff>:/new/prefix1/picture/camera.png</normaloff>:/new/prefix1/picture/camera.png</iconset>
+     <iconset resource="CalibrationTool.qrc">
+      <normaloff>:/picture/picture/camera.png</normaloff>:/picture/picture/camera.png</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -153,21 +153,10 @@
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1221</width>
-     <height>26</height>
-    </rect>
-   </property>
-  </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
   <include location="CalibrationTool.qrc"/>
-  <include location="Resource.qrc"/>
  </resources>
  <connections/>
 </ui>
