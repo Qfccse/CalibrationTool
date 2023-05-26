@@ -226,6 +226,7 @@ void CalibrationTool::selectFile() {
 * ****************************************/
 void CalibrationTool::showImageList() {
 
+    int i = 1;
     for (auto tmp : fileNames) {
         // 定义QListWidgetItem对象
         QListWidgetItem* imageItem = new QListWidgetItem;
@@ -235,10 +236,16 @@ void CalibrationTool::showImageList() {
         imageItem->setIcon(QIcon(tmp));
         //重新设置单元项图片的宽度和高度
         imageItem->setSizeHint(QSize(IMAGE_LIST_WIDTH, IMAGE_LIST_WIDTH * ratio));
-        //imageItem->setText(QFileInfo::fileName(tmp));
-        
+        imageItem->setText(QString::number(i));
+        // QFileInfo fileInfo(tmp);
+        // 使用 fileName() 函数获取文件名
+        // QString fileName = fileInfo.fileName();
+        // imageItem->setText(QString::number(i) + ":  " + fileName);
+        // imageItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         ui.imageList->addItem(imageItem);
+        i++;
     }
+
     //显示QListWidget
     ui.imageList->show();
 }
@@ -248,6 +255,22 @@ void CalibrationTool::handleListItemClick(QListWidgetItem* item)
     // 处理 QListWidgetItem 的点击事件
     // 可以获取 item 的数据、索引等进行处理
     // 示例：获取 item 的文本
-    QString text = item->text();
-    qDebug() << "Clicked item text: " << text;
+    int index = item->text().toInt();
+    qDebug() << "Clicked item text: " << index - 1 << "\n";
+    qDebug() << this->calibResults.imageCorners.size() << "\n";
+    vector<cv::Point2f> corners = this->calibResults.imageCorners[index - 1];
+    cv::Mat flipedFrame = cv::imread(this->fileNames[index - 1].toStdString());
+    cv::drawChessboardCorners(flipedFrame, Size(9, 6), corners, !corners.empty());
+    // 将颜色格式从BGR转换为RGB
+    cvtColor(flipedFrame, flipedFrame, cv::COLOR_BGR2RGB);
+    // 将抓取到的帧，转换为QImage格式。QImage::Format_RGB888不同的摄像头用不同的格式。
+    QImage image(flipedFrame.data, flipedFrame.cols, flipedFrame.rows, flipedFrame.step, QImage::Format_RGB888);
+    //创建显示容器
+    QGraphicsScene* scene = new QGraphicsScene;
+    //向容器中添加文件路径为fileName（QString类型）的文件
+    scene->addPixmap(QPixmap::fromImage(image));
+    //借助graphicsView（QGraphicsView类）控件显示容器的内容
+    ui.imageWindow->setScene(scene);
+    //开始显示
+    ui.imageWindow->show();
 }

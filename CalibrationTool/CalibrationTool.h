@@ -55,5 +55,6 @@ private:
     QMenu* menu;  //创建一个QMenu指针
 private:
     QStringList fileNames;
-    CalibrateResults calibResults;
+    FullCalibrateResults calibResults;
+    vector<vector<cv::Point2f>> imageCorners;
 };

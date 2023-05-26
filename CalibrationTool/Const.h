@@ -10,7 +10,7 @@
 using namespace std;
 using namespace cv;
 
-#define IMAGE_LIST_WIDTH 200
+#define IMAGE_LIST_WIDTH 150
 #define IMAGE_WIN_HEIGHT 480
 #define IMAGE_WIN_WIDTH 640
 #define SAMPLE_RATE 30
@@ -22,10 +22,24 @@ using namespace cv;
 #define INTRINSIC_SAVE_PATH "E:\\cv\\camera_parameters.txt"
 
 
-struct  CalibrateResults
+struct  FullCalibrateResults
 {
     // 角点图
-    vector<Mat> imageWithCorners;
+    vector<vector<cv::Point2f>> imageCorners;
+    // 重投影误差
+    vector<double> reprojectionError;
+    // 内参
+    Mat cameraMatrix;
+    // 畸变
+    Mat distCoeffs;
+    // 外参R
+    vector<Mat> rvecs;
+    // 外参t
+    vector<Mat> tvecs;
+};
+
+struct  CalibrateResults
+{
     // 重投影误差
     vector<double> reprojectionError;
     // 内参
