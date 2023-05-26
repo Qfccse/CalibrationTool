@@ -19,6 +19,7 @@ using namespace cv;
 
 #define NORMAL_CAM 1
 #define FISH_EYE_CAM 2
+#define BOARD_SIZE Size(9,6)
 #define INTRINSIC_SAVE_PATH "E:\\cv\\camera_parameters.txt"
 
 

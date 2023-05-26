@@ -136,7 +136,9 @@ void CalibrationTool::startCalibrate() {
     //ui.takePic->setEnabled(false);
     //ui.calib->setEnabled(false);
     // 
-    this->calibResults = calibrate(fileNames, NORMAL_CAM);
+    cv::Mat image = cv::imread(this->fileNames[0].toStdString());
+    // this->fullCalibResults = calibrate(fileNames, NORMAL_CAM);
+    this->calibResults = calibarteWithCorners(this->imageCorners,image.size(),BOARD_SIZE,NORMAL_CAM);
     //qDebug() 
        // << this->calibResults.rvecs
         //<< this->calibResults.tvecs
@@ -248,6 +250,7 @@ void CalibrationTool::showImageList() {
 
     //显示QListWidget
     ui.imageList->show();
+    this->imageCorners = findCorners(fileNames,BOARD_SIZE);
 }
 
 void CalibrationTool::handleListItemClick(QListWidgetItem* item)
@@ -257,8 +260,8 @@ void CalibrationTool::handleListItemClick(QListWidgetItem* item)
     // 示例：获取 item 的文本
     int index = item->text().toInt();
     qDebug() << "Clicked item text: " << index - 1 << "\n";
-    qDebug() << this->calibResults.imageCorners.size() << "\n";
-    vector<cv::Point2f> corners = this->calibResults.imageCorners[index - 1];
+    qDebug() << this->imageCorners.size() << "\n";
+    vector<cv::Point2f> corners = this->imageCorners[index - 1];
     cv::Mat flipedFrame = cv::imread(this->fileNames[index - 1].toStdString());
     cv::drawChessboardCorners(flipedFrame, Size(9, 6), corners, !corners.empty());
     // 将颜色格式从BGR转换为RGB
