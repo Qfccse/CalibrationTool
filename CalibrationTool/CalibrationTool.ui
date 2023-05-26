@@ -32,6 +32,12 @@
       <height>490</height>
      </rect>
     </property>
+    <property name="mouseTracking">
+     <bool>false</bool>
+    </property>
+    <property name="toolTip">
+     <string/>
+    </property>
    </widget>
    <widget class="QGraphicsView" name="imageWindow">
     <property name="geometry">
@@ -79,13 +85,13 @@
      <string/>
     </property>
     <property name="icon">
-     <iconset resource="Resource.qrc">
-      <normaloff>:/new/prefix1/picture/file.png</normaloff>:/new/prefix1/picture/file.png</iconset>
+     <iconset resource="CalibrationTool.qrc">
+      <normaloff>:/picture/picture/addPicture.png</normaloff>:/picture/picture/addPicture.png</iconset>
     </property>
     <property name="iconSize">
      <size>
-      <width>80</width>
-      <height>80</height>
+      <width>70</width>
+      <height>70</height>
      </size>
     </property>
    </widget>
@@ -99,7 +105,17 @@
      </rect>
     </property>
     <property name="text">
-     <string>close</string>
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset resource="CalibrationTool.qrc">
+      <normaloff>:/picture/picture/cameraOff.png</normaloff>:/picture/picture/cameraOff.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>60</width>
+      <height>60</height>
+     </size>
     </property>
    </widget>
    <widget class="QPushButton" name="takePic">
@@ -112,7 +128,17 @@
      </rect>
     </property>
     <property name="text">
-     <string>take</string>
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset resource="CalibrationTool.qrc">
+      <normaloff>:/picture/picture/addPhoto.png</normaloff>:/picture/picture/addPhoto.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>60</width>
+      <height>60</height>
+     </size>
     </property>
    </widget>
    <widget class="QPushButton" name="calib">
@@ -125,7 +151,17 @@
      </rect>
     </property>
     <property name="text">
-     <string>calibrate</string>
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset resource="CalibrationTool.qrc">
+      <normaloff>:/picture/picture/Calibrate.png</normaloff>:/picture/picture/Calibrate.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>60</width>
+      <height>60</height>
+     </size>
     </property>
    </widget>
    <widget class="QPushButton" name="openCam">
@@ -141,33 +177,22 @@
      <string/>
     </property>
     <property name="icon">
-     <iconset resource="Resource.qrc">
-      <normaloff>:/new/prefix1/picture/camera.png</normaloff>:/new/prefix1/picture/camera.png</iconset>
+     <iconset resource="CalibrationTool.qrc">
+      <normaloff>:/picture/picture/camera.png</normaloff>:/picture/picture/camera.png</iconset>
     </property>
     <property name="iconSize">
      <size>
-      <width>65</width>
-      <height>65</height>
+      <width>60</width>
+      <height>60</height>
      </size>
     </property>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1221</width>
-     <height>26</height>
-    </rect>
-   </property>
-  </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
   <include location="CalibrationTool.qrc"/>
-  <include location="Resource.qrc"/>
  </resources>
  <connections/>
 </ui>

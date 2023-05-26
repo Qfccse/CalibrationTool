@@ -40,11 +40,6 @@ public slots:
     void handleListItemClick(QListWidgetItem* item); // 给上传的图片添加点击事件
 private:
     void initImageList();
-    void createAction();
-    //创建动作
-    void createMenu();
-    //创建菜单
-    void createContentMenu();//创建 上下文菜单
 private:
     void selectFile();
     //弹出选择文件对话框

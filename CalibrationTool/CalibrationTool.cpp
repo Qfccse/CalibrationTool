@@ -33,7 +33,7 @@ void CalibrationTool::initImageList() {
     //createContentMenu();
     //定义QListWidget对象
     //设置QListWidget的显示模式
-    ui.imageList->setViewMode(QListView::IconMode);
+    ui.imageList->setViewMode(QListView::ListMode);
     //设置QListWidget中单元项的图片大小
     ui.imageList->setIconSize(QSize(IMAGE_LIST_WIDTH, IMAGE_LIST_WIDTH));
     //设置QListWidget中单元项的间距
@@ -42,6 +42,8 @@ void CalibrationTool::initImageList() {
     ui.imageList->setResizeMode(QListWidget::Adjust);
     //设置不能移动
     ui.imageList->setMovement(QListWidget::Static);
+    //setAttribute(Qt::WA_Hover, true)
+    ui.imageList->setAttribute(Qt::WA_Hover, true);
 }
 void CalibrationTool::openCamara()
 {
@@ -150,29 +152,6 @@ void CalibrationTool::startCalibrate() {
     //ui.calib->setEnabled(true);
 }
 
-void CalibrationTool::createAction()
-{
-    //创建打开文件动作
-    fileOpenAction = new QAction(tr("open"), this);
-    //摄者打开文件的快捷方式
-    fileOpenAction->setShortcut(tr("Ctr1+0"));
-    //设置打开文件动作提示信息
-    fileOpenAction->setStatusTip("open a folder");
-    //关联打开文件动作的信号和槽
-    connect(fileOpenAction, SIGNAL(triggered()), this, SLOT(fileOpenActionSlot()));
-}
-
-void CalibrationTool::createMenu()
-{
-    menu = this->menuBar()->addMenu(tr("Add Images"));
-    menu->addAction(fileOpenAction);
-}
-
-void CalibrationTool::createContentMenu() {
-    this->addAction(fileOpenAction);
-    this->setContextMenuPolicy(Qt::ActionsContextMenu);
-}
-
 void CalibrationTool::fileOpenActionSlot()
 {
     selectFile();
@@ -228,7 +207,7 @@ void CalibrationTool::selectFile() {
 * ****************************************/
 void CalibrationTool::showImageList() {
 
-    int i = 1;
+    int i = imageCorners.size() + 1;
     for (auto tmp : fileNames) {
         // 定义QListWidgetItem对象
         QListWidgetItem* imageItem = new QListWidgetItem;
@@ -239,11 +218,14 @@ void CalibrationTool::showImageList() {
         //重新设置单元项图片的宽度和高度
         imageItem->setSizeHint(QSize(IMAGE_LIST_WIDTH, IMAGE_LIST_WIDTH * ratio));
         imageItem->setText(QString::number(i));
-        // QFileInfo fileInfo(tmp);
+
+        QFileInfo fileInfo(tmp);
         // 使用 fileName() 函数获取文件名
-        // QString fileName = fileInfo.fileName();
-        // imageItem->setText(QString::number(i) + ":  " + fileName);
-        // imageItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        QString fileName = fileInfo.fileName();
+        //imageItem->setText(QString::number(i) + ":  " + fileName);
+        //imageItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        imageItem->setTextAlignment(Qt::AlignVCenter);
+        imageItem->setToolTip(fileName);
         ui.imageList->addItem(imageItem);
         i++;
     }
