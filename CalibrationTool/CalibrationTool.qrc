@@ -1,9 +1,11 @@
 <RCC>
   <qresource prefix="CalibrationTool"/>
   <qresource prefix="picture">
+    <file>picture/camera.png</file>
+    <file>picture/openning.png</file>
+    <file>picture/Export.png</file>
     <file>picture/Calibrate.png</file>
     <file>picture/addPicture.png</file>
-    <file>picture/camera.png</file>
     <file>picture/cameraOff.png</file>
     <file>picture/addPhoto.png</file>
     <file>picture/closeCamera.png</file>

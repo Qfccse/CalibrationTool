@@ -52,6 +52,7 @@ void CalibrationTool::openCamara()
     if (!cam.isOpened()) {
         cam.open(0);
     }
+    ui.openCam->setIcon(QIcon(":/picture/picture/openning.png"));
     // 设置每一帧的大小为指定值
     cam.set(CAP_PROP_FRAME_WIDTH, IMAGE_WIN_WIDTH);
     cam.set(CAP_PROP_FRAME_HEIGHT, IMAGE_WIN_HEIGHT);
@@ -124,6 +125,7 @@ void CalibrationTool::takingPictures()
 ********************************/
 void CalibrationTool::closeCamara()
 {
+    ui.openCam->setIcon(QIcon(":/picture/picture/camera.png"));
     timer->stop(); // 停止读取数据。
     cam.release();
     QGraphicsScene* scene = new QGraphicsScene;

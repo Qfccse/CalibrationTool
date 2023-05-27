@@ -16,6 +16,9 @@
   <property name="windowTitle">
    <string>CalibrationTool</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <property name="iconSize">
    <size>
     <width>70</width>
@@ -69,123 +72,184 @@
      </rect>
     </property>
    </widget>
-   <widget class="QPushButton" name="open">
+   <widget class="QGroupBox" name="horizontalGroupBox">
     <property name="geometry">
      <rect>
       <x>30</x>
       <y>20</y>
-      <width>80</width>
-      <height>80</height>
+      <width>1151</width>
+      <height>111</height>
      </rect>
     </property>
-    <property name="styleSheet">
-     <string notr="true"/>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="icon">
-     <iconset resource="CalibrationTool.qrc">
-      <normaloff>:/picture/picture/addPicture.png</normaloff>:/picture/picture/addPicture.png</iconset>
-    </property>
-    <property name="iconSize">
-     <size>
-      <width>70</width>
-      <height>70</height>
-     </size>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="closeCam">
-    <property name="geometry">
-     <rect>
-      <x>330</x>
-      <y>20</y>
-      <width>80</width>
-      <height>80</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="icon">
-     <iconset resource="CalibrationTool.qrc">
-      <normaloff>:/picture/picture/cameraOff.png</normaloff>:/picture/picture/cameraOff.png</iconset>
-    </property>
-    <property name="iconSize">
-     <size>
-      <width>60</width>
-      <height>60</height>
-     </size>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="takePic">
-    <property name="geometry">
-     <rect>
-      <x>430</x>
-      <y>20</y>
-      <width>80</width>
-      <height>80</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="icon">
-     <iconset resource="CalibrationTool.qrc">
-      <normaloff>:/picture/picture/addPhoto.png</normaloff>:/picture/picture/addPhoto.png</iconset>
-    </property>
-    <property name="iconSize">
-     <size>
-      <width>60</width>
-      <height>60</height>
-     </size>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="calib">
-    <property name="geometry">
-     <rect>
-      <x>130</x>
-      <y>20</y>
-      <width>80</width>
-      <height>80</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="icon">
-     <iconset resource="CalibrationTool.qrc">
-      <normaloff>:/picture/picture/Calibrate.png</normaloff>:/picture/picture/Calibrate.png</iconset>
-    </property>
-    <property name="iconSize">
-     <size>
-      <width>60</width>
-      <height>60</height>
-     </size>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="openCam">
-    <property name="geometry">
-     <rect>
-      <x>230</x>
-      <y>20</y>
-      <width>80</width>
-      <height>80</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="icon">
-     <iconset resource="CalibrationTool.qrc">
-      <normaloff>:/picture/picture/camera.png</normaloff>:/picture/picture/camera.png</iconset>
-    </property>
-    <property name="iconSize">
-     <size>
-      <width>60</width>
-      <height>60</height>
-     </size>
-    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="open">
+       <property name="baseSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>add picture</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="CalibrationTool.qrc">
+         <normaloff>:/picture/picture/addPicture.png</normaloff>:/picture/picture/addPicture.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>60</width>
+         <height>60</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="calib">
+       <property name="toolTip">
+        <string>calibrate</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="CalibrationTool.qrc">
+         <normaloff>:/picture/picture/Calibrate.png</normaloff>:/picture/picture/Calibrate.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>60</width>
+         <height>60</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="openCam">
+       <property name="toolTip">
+        <string>open camera</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="CalibrationTool.qrc">
+         <normaloff>:/picture/picture/camera.png</normaloff>
+         <normalon>:/picture/picture/openning.png</normalon>
+         <activeon>:/picture/picture/openning.png</activeon>
+         <selectedon>:/picture/picture/openning.png</selectedon>:/picture/picture/camera.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>60</width>
+         <height>60</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeCam">
+       <property name="toolTip">
+        <string>close camera</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="CalibrationTool.qrc">
+         <normaloff>:/picture/picture/cameraOff.png</normaloff>:/picture/picture/cameraOff.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>60</width>
+         <height>60</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="takePic">
+       <property name="toolTip">
+        <string>take a shot</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="CalibrationTool.qrc">
+         <normaloff>:/picture/picture/addPhoto.png</normaloff>:/picture/picture/addPhoto.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>60</width>
+         <height>60</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="Export">
+       <property name="toolTip">
+        <string>export parameters</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="CalibrationTool.qrc">
+         <normaloff>:/picture/picture/Export.png</normaloff>:/picture/picture/Export.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>60</width>
+         <height>60</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="verticalGroupBox">
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>10</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QLabel" name="cameraModeLabel">
+          <property name="text">
+           <string>Camera Mode</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="standardMode">
+          <property name="text">
+           <string>Standard</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="fisheyeMode">
+          <property name="text">
+           <string>Fisheye</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
