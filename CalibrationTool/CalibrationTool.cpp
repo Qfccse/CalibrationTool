@@ -94,21 +94,21 @@ CalibrationTool::CalibrationTool(QWidget* parent)
 
 
     //ui.myChart->SetChart(chart);
+    ui.haha->setChart(chart);
 
     // 展示图表
-    QGraphicsView* histogramView = ui.histogram; // histogram 是之前在 UI 文件中定义的 QGraphicsView 组件
-    QGraphicsScene* scene = new QGraphicsScene(histogramView); // 创建一个场景对象，关联到 histogramView 组件
-    //QGraphicsScene* scene = new QGraphicsScene(histogramView);
+    //QGraphicsView* histogramView = ui.histogram; // histogram 是之前在 UI 文件中定义的 QGraphicsView 组件
+    //QGraphicsScene* scene = new QGraphicsScene(histogramView); // 创建一个场景对象，关联到 histogramView 组件
 
-    // 获取 histogram 组件的位置和尺寸
-    QRect histogramGeometry = ui.histogram->geometry();
+    //// 获取 histogram 组件的位置和尺寸
+    //QRect histogramGeometry = ui.histogram->geometry();
 
-    // 将 chartView 的位置和尺寸设置为与 histogram 相同
-    chartView->setGeometry(histogramGeometry);
-    chartView->resize(300, 300);
+    //// 将 chartView 的位置和尺寸设置为与 histogram 相同
+    //chartView->setGeometry(histogramGeometry);
+    //chartView->resize(300, 300);
 
-    histogramView->setScene(scene);
-    scene->addWidget(chartView); // 将 chartView 添加到场景中
+    //histogramView->setScene(scene);
+    //scene->addWidget(chartView); // 将 chartView 添加到场景中
 
 }
 
