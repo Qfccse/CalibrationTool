@@ -6,39 +6,39 @@ FullCalibrateResults calibrate(const QStringList& fileNames, const int cameraTyp
     int boardWidth = 9;  // 棋盘格横向内角点数量
     int boardHeight = 6; // 棋盘格纵向内角点数量
     float squareSize = 0.12f; // 棋盘格格子的大小，单位为米,随便设置，不影响相机内参计算
-    Size boardSize(boardWidth, boardHeight);
+    cv::Size boardSize(boardWidth, boardHeight);
 
-    vector<vector<Point3f>> objectPoints;
-    vector<vector<Point2f>> imagePoints;
-    vector<Point2f> corners;
+    vector<vector<cv::Point3f>> objectPoints;
+    vector<vector<cv::Point2f>> imagePoints;
+    vector<cv::Point2f> corners;
 
     // 2. 拍摄棋盘图像
-    Mat image, gray;
+    cv::Mat image, gray;
     // namedWindow("image", WINDOW_NORMAL);
     FullCalibrateResults res;
 
     // 3. 读入图像数据，并提取角点
     for (size_t i = 0; i < fileNames.size(); i++)
     {
-        image = imread(fileNames[i].toStdString(), IMREAD_COLOR);
+        image = cv::imread(fileNames[i].toStdString(), cv::IMREAD_COLOR);
         print(image);
-        cvtColor(image, gray, COLOR_BGR2GRAY);
+        cvtColor(image, gray, cv::COLOR_BGR2GRAY);
 
-        bool found = findChessboardCorners(image, boardSize, corners, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE + CALIB_CB_FAST_CHECK);
+        bool found = findChessboardCorners(image, boardSize, corners, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE + cv::CALIB_CB_FAST_CHECK);
         if (found)
         {
-            cornerSubPix(gray, corners, Size(11, 11), Size(-1, -1), TermCriteria(TermCriteria::EPS + TermCriteria::COUNT, 30, 0.1));
+            cornerSubPix(gray, corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1));
             drawChessboardCorners(image, boardSize, corners, found);
             res.imageCorners.push_back(corners);
             // imshow("image", image);
             // waitKey();
 
-            vector<Point3f> objectCorners;
+            vector<cv::Point3f> objectCorners;
             for (int j = 0; j < boardHeight; j++)
             {
                 for (int k = 0; k < boardWidth; k++)
                 {
-                    objectCorners.push_back(Point3f(k * squareSize, j * squareSize, 0));
+                    objectCorners.push_back(cv::Point3f(k * squareSize, j * squareSize, 0));
                 }
             }
             objectPoints.push_back(objectCorners);
@@ -55,8 +55,8 @@ FullCalibrateResults calibrate(const QStringList& fileNames, const int cameraTyp
     }
 
     // 4. 标定相机
-    Mat cameraMatrix, distCoeffs;
-    vector<Mat> rvecs, tvecs;
+    cv::Mat cameraMatrix, distCoeffs;
+    vector<cv::Mat> rvecs, tvecs;
     double totalReprojectionError;
     if (cameraType == NORMAL_CAM) 
     {
@@ -96,27 +96,27 @@ FullCalibrateResults calibrate(const QStringList& fileNames, const int cameraTyp
 
 
 vector<vector<cv::Point2f>> findCorners(const QStringList& fileNames,
-    const Size boardSize, 
+    const cv::Size boardSize,
     CalibrationTool* ui) {
     // 1. 准备标定棋盘图像
     float squareSize = 0.12f; // 棋盘格格子的大小，单位为米,随便设置，不影响相机内参计算
-    vector<Point2f> corners;
+    vector<cv::Point2f> corners;
 
     // 2. 拍摄棋盘图像
-    Mat image, gray;
+    cv::Mat image, gray;
     vector<vector<cv::Point2f>> res;
 
     // 3. 读入图像数据，并提取角点
     for (size_t i = 0; i < fileNames.size(); i++)
     {
-        image = imread(fileNames[i].toStdString(), IMREAD_COLOR);
+        image = cv::imread(fileNames[i].toStdString(), cv::IMREAD_COLOR);
         print(image);
-        cvtColor(image, gray, COLOR_BGR2GRAY);
+        cvtColor(image, gray, cv::COLOR_BGR2GRAY);
 
-        bool found = findChessboardCorners(image, boardSize, corners, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE + CALIB_CB_FAST_CHECK);
+        bool found = findChessboardCorners(image, boardSize, corners, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE + cv::CALIB_CB_FAST_CHECK);
         if (found)
         {
-            cornerSubPix(gray, corners, Size(11, 11), Size(-1, -1), TermCriteria(TermCriteria::EPS + TermCriteria::COUNT, 30, 0.1));
+            cornerSubPix(gray, corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1));
             drawChessboardCorners(image, boardSize, corners, found);
             res.push_back(corners);
         }
@@ -134,18 +134,18 @@ vector<vector<cv::Point2f>> findCorners(const QStringList& fileNames,
     return res;
 }
 
-vector<cv::Point2f> findOneCorners(const QString& fileName, const Size boardSize) {
+vector<cv::Point2f> findOneCorners(const QString& fileName, const cv::Size boardSize) {
     float squareSize = 0.12f; // 棋盘格格子的大小，单位为米,随便设置，不影响相机内参计算
-    vector<Point2f> corners;
-    Mat image, gray;
-    image = imread(fileName.toStdString(), IMREAD_COLOR);
+    vector<cv::Point2f> corners;
+    cv::Mat image, gray;
+    image = cv::imread(fileName.toStdString(), cv::IMREAD_COLOR);
     print(image);
-    cvtColor(image, gray, COLOR_BGR2GRAY);
+    cvtColor(image, gray, cv::COLOR_BGR2GRAY);
 
-    bool found = findChessboardCorners(image, boardSize, corners, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE + CALIB_CB_FAST_CHECK);
+    bool found = findChessboardCorners(image, boardSize, corners, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE + cv::CALIB_CB_FAST_CHECK);
     if (found)
     {
-        cornerSubPix(gray, corners, Size(11, 11), Size(-1, -1), TermCriteria(TermCriteria::EPS + TermCriteria::COUNT, 30, 0.1));
+        cornerSubPix(gray, corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1));
         drawChessboardCorners(image, boardSize, corners, found);
         return corners;
     }
@@ -156,18 +156,18 @@ vector<cv::Point2f> findOneCorners(const QString& fileName, const Size boardSize
     }
 }
 
-vector<cv::Point2f> findOneCorners(const Mat& imageFromCam, const Size boardSize) {
+vector<cv::Point2f> findOneCorners(const cv::Mat& imageFromCam, const cv::Size boardSize) {
     float squareSize = 0.12f; // 棋盘格格子的大小，单位为米,随便设置，不影响相机内参计算
-    vector<Point2f> corners;
-    Mat image, gray;
+    vector<cv::Point2f> corners;
+    cv::Mat image, gray;
     image = imageFromCam;
     print(image);
-    cvtColor(image, gray, COLOR_BGR2GRAY);
+    cvtColor(image, gray, cv::COLOR_BGR2GRAY);
 
-    bool found = findChessboardCorners(image, boardSize, corners, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE + CALIB_CB_FAST_CHECK);
+    bool found = findChessboardCorners(image, boardSize, corners, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE + cv::CALIB_CB_FAST_CHECK);
     if (found)
     {
-        cornerSubPix(gray, corners, Size(11, 11), Size(-1, -1), TermCriteria(TermCriteria::EPS + TermCriteria::COUNT, 30, 0.1));
+        cornerSubPix(gray, corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1));
         drawChessboardCorners(image, boardSize, corners, found);
         return corners;
     }
@@ -180,19 +180,19 @@ vector<cv::Point2f> findOneCorners(const Mat& imageFromCam, const Size boardSize
 
 
 CalibrateResults calibarteWithCorners(const vector<vector<cv::Point2f>>& imageCorners,
-    const Size imageSize, const Size boardSize, const int cameraType) {
+    const cv::Size imageSize, const cv::Size boardSize, const int cameraType) {
     CalibrateResults res;
-    vector<vector<Point3f>> objectPoints;
-    vector<vector<Point2f>> imagePoints;
+    vector<vector<cv::Point3f>> objectPoints;
+    vector<vector<cv::Point2f>> imagePoints;
 
     for (size_t i = 0; i < imageCorners.size(); i++) {
         if (!imageCorners[i].empty()) {
-            vector<Point3f> objectCorners;
+            vector<cv::Point3f> objectCorners;
             for (int j = 0; j < boardSize.height; j++)
             {
                 for (int k = 0; k < boardSize.width; k++)
                 {
-                    objectCorners.push_back(Point3f(k * 0.12f, j * 0.12f, 0));
+                    objectCorners.push_back(cv::Point3f(k * 0.12f, j * 0.12f, 0));
                 }
             }
             objectPoints.push_back(objectCorners);
@@ -201,8 +201,8 @@ CalibrateResults calibarteWithCorners(const vector<vector<cv::Point2f>>& imageCo
     }
 
     // 4. 标定相机
-    Mat cameraMatrix, distCoeffs;
-    vector<Mat> rvecs, tvecs;
+    cv::Mat cameraMatrix, distCoeffs;
+    vector<cv::Mat> rvecs, tvecs;
     double totalReprojectionError;
     if (cameraType == NORMAL_CAM)
     {
@@ -241,14 +241,14 @@ CalibrateResults calibarteWithCorners(const vector<vector<cv::Point2f>>& imageCo
     return res;
 }
 
-double calculateReprojectionError(const vector<Point3f>& objectPoints,
-    const vector<Point2f>& imagePoints,
-    const Mat& cameraMatrix,
-    const Mat& distCoeffs,
-    const Mat& rvec,
-    const Mat& tvec,
+double calculateReprojectionError(const vector<cv::Point3f>& objectPoints,
+    const vector<cv::Point2f>& imagePoints,
+    const cv::Mat& cameraMatrix,
+    const cv::Mat& distCoeffs,
+    const cv::Mat& rvec,
+    const cv::Mat& tvec,
     const int cameraType) {
-    vector<Point2f> projectedPoints;
+    vector<cv::Point2f> projectedPoints;
     if (cameraType == NORMAL_CAM)
     {
         cv::projectPoints(objectPoints, rvec, tvec, cameraMatrix, distCoeffs, projectedPoints);

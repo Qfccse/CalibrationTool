@@ -10,7 +10,7 @@
 #include <QtWidgets/QMainWindow>
 
 using namespace std;
-using namespace cv;
+//using namespace cv;
 
 #define IMAGE_LIST_WIDTH 150
 #define IMAGE_WIN_HEIGHT 480
@@ -32,13 +32,13 @@ struct  FullCalibrateResults
     // 重投影误差
     vector<double> reprojectionError;
     // 内参
-    Mat cameraMatrix;
+    cv::Mat cameraMatrix;
     // 畸变
-    Mat distCoeffs;
+    cv::Mat distCoeffs;
     // 外参R
-    vector<Mat> rvecs;
+    vector<cv::Mat> rvecs;
     // 外参t
-    vector<Mat> tvecs;
+    vector<cv::Mat> tvecs;
 };
 
 struct  CalibrateResults
@@ -46,11 +46,11 @@ struct  CalibrateResults
     // 重投影误差
     vector<double> reprojectionError;
     // 内参
-    Mat cameraMatrix;
+    cv::Mat cameraMatrix;
     // 畸变
-    Mat distCoeffs;
+    cv::Mat distCoeffs;
     // 外参R
-    vector<Mat> rvecs;
+    vector<cv::Mat> rvecs;
     // 外参t
-    vector<Mat> tvecs;
+    vector<cv::Mat> tvecs;
 };
