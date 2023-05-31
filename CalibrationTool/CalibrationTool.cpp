@@ -382,13 +382,15 @@ void CalibrationTool::createBarChart() {
 	QBarSeries* series = new QBarSeries();
 	series->append(projectionError);
 
-	// 创建Q
-	//QChart* chart = new QChart();
+	// Set the width of the bars
+	qreal barWidth = 1.0; // Adjust the value to your desired width
+	series->setBarWidth(barWidth);
+
+
 	QChart* chart = new QChart();
 	chart->addSeries(series);
 	chart->setTitle("Projection Error");
 	chart->setAnimationOptions(QChart::SeriesAnimations);
-
 	//chart->setBackgroundBrush(Qt::blue);
 
 
@@ -401,7 +403,6 @@ void CalibrationTool::createBarChart() {
 	axisX->setTitleText("Images");
 	//axisX->append(QStringList() << "0" << "1" << "2" << "3" << "4" << "5" << "6" << "7" << "8"); // 添加X轴标签
 	chart->addAxis(axisX, Qt::AlignBottom);
-	series->attachAxis(axisX);
 
 	QValueAxis* axisY = new QValueAxis();
 	//axisY->setRange(0, 15);
@@ -525,10 +526,6 @@ void CalibrationTool::createPatternCentric() {
 	coordinateSystem->addComponent(zAxis);
 	coordinateSystem->addComponent(material);
 
-	coordinateSystem->addComponent(xAxis);
-	coordinateSystem->addComponent(yAxis);
-	coordinateSystem->addComponent(zAxis);
-
 	// 设置场景根实体
 	window->setRootEntity(rootEntity);
 
@@ -537,7 +534,4 @@ void CalibrationTool::createPatternCentric() {
 	transformView->setViewport(container);
 	transformView->setRenderHint(QPainter::Antialiasing);
 	transformView->show();
-	
-
-
 }
