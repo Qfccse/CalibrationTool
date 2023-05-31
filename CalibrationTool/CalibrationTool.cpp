@@ -2,17 +2,8 @@
 #include "Const.h"
 #include "Calibrate.h"
 
-#include <QtCharts/QChartGlobal>
-#include <QtCharts/QChart>
-#include <QtCharts/QChartView>
-#include <QtCharts/QBarSeries>
-#include <QtCharts/QBarSet>
-#include <QtCharts/QValueAxis>
-#include <QtCharts/QBarCategoryAxis>
-#include <QtCharts/QLineSeries>
-
-
-#include <QtWidgets>
+#include <QtCharts>
+#include <Qt3DCore>
 #include <Qt3DRender>
 #include <Qt3DExtras>
 
@@ -361,8 +352,8 @@ void CalibrationTool::handleListItemClick(QListWidgetItem* item)
 
 
 /***************************************
-*Qt中使用QCharts画条形图步骤如下:
-* ****************************************/
+*** Qt中使用QCharts画条形图BarChart ***
+*****************************************/
 void CalibrationTool::createBarChart() {
 	// 条形图数据
 	QBarSet* projectionError = new QBarSet("Projection Error");
@@ -444,8 +435,8 @@ void CalibrationTool::createBarChart() {
 }
 
 /***************************************
-*Qt中使用QCharts画createPatternCentric图步骤如下:
-* ****************************************/
+*** Qt中使用Qt3D画三维场景图 ***
+*****************************************/
 void CalibrationTool::createPatternCentric() {
 
 	//// 每张图片的外参
@@ -462,76 +453,144 @@ void CalibrationTool::createPatternCentric() {
 	//// 计算三维坐标
 	//cv::Mat result = R_ * v_;
 
-	//// 输出结果
-	//std::cout << "Result:\n" << result << std::endl;
-	// 打印矩阵内容
-	//cout << D.at<double>(1, 2) << endl;
 
 	// 展示图表
 	QGraphicsView* transformView = ui.transformGram; // histogram 是之前在 UI 文件中定义的 QGraphicsView 组件
 	QGraphicsScene* scene = new QGraphicsScene(transformView); // 创建一个场景对象，关联到 histogramView 组件
 
-	// 创建 3D 窗口
-	Qt3DExtras::Qt3DWindow* window = new Qt3DExtras::Qt3DWindow;
-	window->defaultFrameGraph()->setClearColor(Qt::white);
+	// Root entity
+	Qt3DCore::QEntity* rootEntity = new Qt3DCore::QEntity();
+	// 3D Window
+	Qt3DExtras::Qt3DWindow* view = new Qt3DExtras::Qt3DWindow();
+	view->defaultFrameGraph()->setClearColor(QColor(QRgb(0xffffffff)));
+	QWidget* container = QWidget::createWindowContainer(view);
+	QSize screenSize = view->screen()->size();
+	container->setMinimumSize(QSize(200, 100));
+	container->setMaximumSize(screenSize);
+	view->setRootEntity(rootEntity);
 
-	// 创建根实体
-	Qt3DCore::QEntity* rootEntity = new Qt3DCore::QEntity;
+	QWidget* widget = new QWidget;
+	// layout
+	QHBoxLayout* hLayout = new QHBoxLayout(widget);
+	QVBoxLayout* vLayout = new QVBoxLayout();
+	vLayout->setAlignment(Qt::AlignTop);
+	hLayout->addWidget(container, 1);
+	hLayout->addLayout(vLayout);
+	widget->setWindowTitle(QStringLiteral("Basic shapes"));
 
-	//// 创建相机
-	//Qt3DRender::QCamera* camera = window.camera();
-	//camera->setPosition(QVector3D(0, 0, 100));
-	//camera->setViewCenter(QVector3D(0, 0, 0));
+	// Camera
+	Qt3DRender::QCamera* cameraEntity = view->camera();
+	// For camera controls
+	Qt3DExtras::QFirstPersonCameraController* camController = new Qt3DExtras::QFirstPersonCameraController(rootEntity);
+	cameraEntity->lens()->setPerspectiveProjection(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
+	cameraEntity->setPosition(QVector3D(30.0f, 30.0f, 30.0f));
+	cameraEntity->setUpVector(QVector3D(0, 1, 0));
+	cameraEntity->setViewCenter(QVector3D(0, 0, 0));
+	camController->setCamera(cameraEntity);
 
-	// 创建坐标系
-	Qt3DExtras::QCuboidMesh* xAxis = new Qt3DExtras::QCuboidMesh;
-	xAxis->setXExtent(100);
-	xAxis->setYExtent(0.5);
-	xAxis->setZExtent(0.5);
-	//xAxis->setColor(Qt::red);
+	// Light
+	Qt3DCore::QEntity* lightEntity = new Qt3DCore::QEntity(rootEntity);
+	Qt3DRender::QPointLight* light = new Qt3DRender::QPointLight(lightEntity);
+	light->setColor("white");
+	light->setIntensity(1);
+	lightEntity->addComponent(light);
+	Qt3DCore::QTransform* lightTransform = new Qt3DCore::QTransform(lightEntity);
+	lightTransform->setTranslation(cameraEntity->position());
+	lightEntity->addComponent(lightTransform);
 
-	Qt3DExtras::QCuboidMesh* yAxis = new Qt3DExtras::QCuboidMesh;
-	yAxis->setXExtent(0.5);
-	yAxis->setYExtent(100);
-	yAxis->setZExtent(0.5);
-	//yAxis->setColor(Qt::green);
 
-	Qt3DExtras::QCuboidMesh* zAxis = new Qt3DExtras::QCuboidMesh;
-	zAxis->setXExtent(0.5);
-	zAxis->setYExtent(0.5);
-	zAxis->setZExtent(100);
-	//zAxis->setColor(Qt::blue);
+	// Cuboid mesh
+	Qt3DExtras::QCuboidMesh* cuboid = new Qt3DExtras::QCuboidMesh();
+	// CuboidMesh Transform
+	Qt3DCore::QTransform* cuboidTransform = new Qt3DCore::QTransform();
+	cuboidTransform->setScale(1.0f);
+	cuboidTransform->setTranslation(QVector3D(10.0f, 10.0f, 10.0f));
+	// CuboidMesh Material
+	Qt3DExtras::QPhongMaterial* cuboidMaterial = new Qt3DExtras::QPhongMaterial();
+	cuboidMaterial->setDiffuse(QColor(Qt::black));
+	// Cuboid
+	Qt3DCore::QEntity* cuboidEntity = new Qt3DCore::QEntity(rootEntity);
+	cuboidEntity->addComponent(cuboid);
+	cuboidEntity->addComponent(cuboidMaterial);
+	cuboidEntity->addComponent(cuboidTransform);
 
-	//// 创建长方体
-	//Qt3DExtras::QCuboidMesh* cube1 = new Qt3DExtras::QCuboidMesh;
-	//cube1->setXExtent(10);
-	//cube1->setYExtent(10);
-	//cube1->setZExtent(10);
-	////cube1->setColor(Qt::yellow);
+	// Plane mesh
+	Qt3DExtras::QPlaneMesh* planeMesh = new Qt3DExtras::QPlaneMesh();
+	planeMesh->setWidth(2);
+	planeMesh->setHeight(2);
+	// Plane transform
+	Qt3DCore::QTransform* planeTransform = new Qt3DCore::QTransform();
+	planeTransform->setScale(5.0f);
+	planeTransform->setTranslation(QVector3D(10.0f, 0.0f, 10.0f));
+	// Plane material
+	Qt3DExtras::QPhongMaterial* planeMaterial = new Qt3DExtras::QPhongMaterial();
+	planeMaterial->setDiffuse(QColor(65, 205, 82));
+	// Plane
+	Qt3DCore::QEntity* planeEntity = new Qt3DCore::QEntity(rootEntity);
+	planeEntity->addComponent(planeMesh);
+	planeEntity->addComponent(planeMaterial);
+	planeEntity->addComponent(planeTransform);
 
-	//Qt3DExtras::QCuboidMesh* cube2 = new Qt3DExtras::QCuboidMesh;
-	//cube2->setXExtent(20);
-	//cube2->setYExtent(20);
-	//cube2->setZExtent(20);
-	////cube2->setColor(Qt::magenta);
+	// (x→,y↑,z●)
+	// Axis entity
+	Qt3DCore::QEntity* axisEntity = new Qt3DCore::QEntity(rootEntity);
 
-	// 创建材质
-	Qt3DExtras::QPhongMaterial* material = new Qt3DExtras::QPhongMaterial;
-	material->setDiffuse(Qt::red); // 设置材质颜色
+	// X-axis
+	// X-axis mesh
+	Qt3DExtras::QCylinderMesh* xAxisMesh = new Qt3DExtras::QCylinderMesh();
+	xAxisMesh->setRadius(0.05f);
+	xAxisMesh->setLength(20.0f);
+	// X-axis material
+	Qt3DExtras::QPhongMaterial* xAxisMaterial = new Qt3DExtras::QPhongMaterial();
+	xAxisMaterial->setAmbient(Qt::red); //color
+	// X-axis transform
+	Qt3DCore::QTransform* xAxisTransform = new Qt3DCore::QTransform();
+	xAxisTransform->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), 90.0f));
+	xAxisTransform->setTranslation(QVector3D(10.0f, 0.0f, 0.0f));
+	// X-axis entity
+	Qt3DCore::QEntity* xAxisEntity = new Qt3DCore::QEntity(axisEntity);
+	xAxisEntity->addComponent(xAxisMesh);
+	xAxisEntity->addComponent(xAxisMaterial);
+	xAxisEntity->addComponent(xAxisTransform);
 
-	// 创建实体组件并添加材质
-	Qt3DCore::QEntity* coordinateSystem = new Qt3DCore::QEntity(rootEntity);
-	coordinateSystem->addComponent(xAxis);
-	coordinateSystem->addComponent(yAxis);
-	coordinateSystem->addComponent(zAxis);
-	coordinateSystem->addComponent(material);
+	// Y-axis
+	// Y-axis mesh
+	Qt3DExtras::QCylinderMesh* yAxisMesh = new Qt3DExtras::QCylinderMesh();
+	yAxisMesh->setRadius(0.05f);
+	yAxisMesh->setLength(20.0f);
+	// Y-axis material
+	Qt3DExtras::QPhongMaterial* zXxisMaterial = new Qt3DExtras::QPhongMaterial();
+	zXxisMaterial->setAmbient(Qt::yellow); //color
+	// Y-axis transform
+	Qt3DCore::QTransform* yAxisTransform = new Qt3DCore::QTransform();
+	yAxisTransform->setTranslation(QVector3D(0.0f, 10.0f, 0.0f));
+	// Y-axis entity
+	Qt3DCore::QEntity* yAxisEntity = new Qt3DCore::QEntity(axisEntity);
+	yAxisEntity->addComponent(yAxisMesh);
+	yAxisEntity->addComponent(zXxisMaterial);
+	yAxisEntity->addComponent(yAxisTransform);
 
-	// 设置场景根实体
-	window->setRootEntity(rootEntity);
+	// Z-axis
+	// Z-axis mesh
+	Qt3DExtras::QCylinderMesh* zAxisMesh = new Qt3DExtras::QCylinderMesh();
+	zAxisMesh->setRadius(0.05f);
+	zAxisMesh->setLength(20.0f);
+	// Z-axis material
+	Qt3DExtras::QPhongMaterial* zAxisMaterial = new Qt3DExtras::QPhongMaterial();
+	zAxisMaterial->setAmbient(Qt::blue); //color
+	// Z-axis transform
+	Qt3DCore::QTransform* zAxisTransform = new Qt3DCore::QTransform();
+	zAxisTransform->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), -90.0f));
+	zAxisTransform->setTranslation(QVector3D(0.0f, 0.0f, 10.0f));
+	// Z-axis entity
+	Qt3DCore::QEntity* zAxisEntity = new Qt3DCore::QEntity(axisEntity);
+	zAxisEntity->addComponent(zAxisMesh);
+	zAxisEntity->addComponent(zAxisMaterial);
+	zAxisEntity->addComponent(zAxisTransform);
 
-	// 将 3D 视图嵌入到 QGraphicsView
-	QWidget* container = QWidget::createWindowContainer(window);
-	transformView->setViewport(container);
-	transformView->setRenderHint(QPainter::Antialiasing);
-	transformView->show();
+	// Show window
+	widget->show();
+	widget->resize(500, 500);
+
+	//scene->addWidget(widget);
 }
