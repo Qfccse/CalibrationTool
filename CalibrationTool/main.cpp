@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     camController->setCamera(cameraEntity);
 
     cameraEntity->lens()->setPerspectiveProjection(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
-    cameraEntity->setPosition(QVector3D(0, 0, 20.0f));
+    cameraEntity->setPosition(QVector3D(30.0f, 30.0f, 30.0f));
     cameraEntity->setUpVector(QVector3D(0, 1, 0));
     cameraEntity->setViewCenter(QVector3D(0, 0, 0));
 
@@ -65,7 +65,8 @@ int main(int argc, char *argv[])
     // CuboidMesh Transform
     Qt3DCore::QTransform* cuboidTransform = new Qt3DCore::QTransform();
     cuboidTransform->setScale(4.0f);
-    cuboidTransform->setTranslation(QVector3D(0.0f, 0.0f, 0.0f));
+    // (x¡ú,y¡ü,z¡ñ)
+    cuboidTransform->setTranslation(QVector3D(10.0f, 0.0f, 0.0f));
     // CuboidMesh Material
     Qt3DExtras::QPhongMaterial* cuboidMaterial = new Qt3DExtras::QPhongMaterial();
     cuboidMaterial->setDiffuse(QColor(QRgb(0x665423)));
@@ -75,8 +76,28 @@ int main(int argc, char *argv[])
     cuboidEntity->addComponent(cuboidMaterial);
     cuboidEntity->addComponent(cuboidTransform);
 
+    // Plane shape data
+    Qt3DExtras::QPlaneMesh* planeMesh = new Qt3DExtras::QPlaneMesh();
+    planeMesh->setWidth(2);
+    planeMesh->setHeight(2);
+
+    // Plane mesh transform
+    Qt3DCore::QTransform* planeTransform = new Qt3DCore::QTransform();
+    planeTransform->setScale(5.0f);
+    planeTransform->setTranslation(QVector3D(10.0f, 0.0f, 10.0f));
+    // Plane material
+    Qt3DExtras::QPhongMaterial* planeMaterial = new Qt3DExtras::QPhongMaterial();
+    planeMaterial->setDiffuse(QColor(65, 205, 82));
+
+    // Plane
+    Qt3DCore::QEntity* planeEntity = new Qt3DCore::QEntity(rootEntity);
+    planeEntity->addComponent(planeMesh);
+    planeEntity->addComponent(planeMaterial);
+    planeEntity->addComponent(planeTransform);
+
     // Axis entity
     Qt3DCore::QEntity* axisEntity = new Qt3DCore::QEntity(rootEntity);
+
 
     // X-axis
     // X-axis mesh
@@ -89,7 +110,7 @@ int main(int argc, char *argv[])
     // X-axis transform
     Qt3DCore::QTransform* xAxisTransform = new Qt3DCore::QTransform();
     xAxisTransform->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), 90.0f));
-    xAxisTransform->setTranslation(QVector3D(0.0f, 0.0f, 0.0f));
+    xAxisTransform->setTranslation(QVector3D(10.0f, 0.0f, 0.0f));
     // X-axis entity
     Qt3DCore::QEntity* xAxisEntity = new Qt3DCore::QEntity(axisEntity);
     xAxisEntity->addComponent(xAxisMesh);
@@ -103,18 +124,17 @@ int main(int argc, char *argv[])
     yAxisMesh->setRadius(0.05f);
     yAxisMesh->setLength(20.0f);
     // Y-axis material
-    Qt3DExtras::QPhongMaterial* yAxisMaterial = new Qt3DExtras::QPhongMaterial();
-    yAxisMaterial->setAmbient(Qt::blue); //color
+    Qt3DExtras::QPhongMaterial* zXxisMaterial = new Qt3DExtras::QPhongMaterial();
+    zXxisMaterial->setAmbient(Qt::yellow); //color
     // Y-axis transform
     Qt3DCore::QTransform* yAxisTransform = new Qt3DCore::QTransform();
-    yAxisTransform->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), -90.0f));
-    yAxisTransform->setTranslation(QVector3D(0.0f, 0.0f, 0.0f));
+    //yAxisTransform->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), 90.0f));
+    yAxisTransform->setTranslation(QVector3D(0.0f, 10.0f, 0.0f));
 
     Qt3DCore::QEntity* yAxisEntity = new Qt3DCore::QEntity(axisEntity);
     yAxisEntity->addComponent(yAxisMesh);
-    yAxisEntity->addComponent(yAxisMaterial);
+    yAxisEntity->addComponent(zXxisMaterial);
     yAxisEntity->addComponent(yAxisTransform);
-
 
     // Z-axis
     // Z-axis mesh
@@ -122,16 +142,16 @@ int main(int argc, char *argv[])
     zAxisMesh->setRadius(0.05f);
     zAxisMesh->setLength(20.0f);
     // Z-axis material
-    Qt3DExtras::QPhongMaterial* zXxisMaterial = new Qt3DExtras::QPhongMaterial();
-    zXxisMaterial->setAmbient(Qt::yellow); //color
+    Qt3DExtras::QPhongMaterial* zAxisMaterial = new Qt3DExtras::QPhongMaterial();
+    zAxisMaterial->setAmbient(Qt::blue); //color
     // Z-axis transform
     Qt3DCore::QTransform* zAxisTransform = new Qt3DCore::QTransform();
-    //zAxisTransform->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), 90.0f));
-    zAxisTransform->setTranslation(QVector3D(0.0f, 0.0f, 0.0f));
+    zAxisTransform->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), -90.0f));
+    zAxisTransform->setTranslation(QVector3D(0.0f, 0.0f, 10.0f));
 
     Qt3DCore::QEntity* zAxisEntity = new Qt3DCore::QEntity(axisEntity);
     zAxisEntity->addComponent(zAxisMesh);
-    zAxisEntity->addComponent(zXxisMaterial);
+    zAxisEntity->addComponent(zAxisMaterial);
     zAxisEntity->addComponent(zAxisTransform);
 
     // Show window
