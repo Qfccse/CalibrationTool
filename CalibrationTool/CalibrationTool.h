@@ -46,6 +46,8 @@ signals:
 private:
     void initImageList();
     void createProgressBar(bool isBatch);
+    void createBarChart(); // 画条形图
+    void createPatternCentric();
 private:
     void selectFile();
     //弹出选择文件对话框

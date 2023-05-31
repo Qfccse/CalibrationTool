@@ -2,25 +2,35 @@
 #include "Const.h"
 #include "Calibrate.h"
 
+#include <QtCharts>
+#include <Qt3DCore>
+#include <Qt3DRender>
+#include <Qt3DExtras>
+
+QT_CHARTS_USE_NAMESPACE
+
 CalibrationTool::CalibrationTool(QWidget* parent)
-    : QMainWindow(parent)
+	: QMainWindow(parent)
 {
-    /*åˆå§‹åŒ–*/
-    ui.setupUi(this);
-    initImageList();
-    timer = new QTimer(this);
+	/*³õÊ¼»¯*/
+	ui.setupUi(this);
+	initImageList();
+	timer = new QTimer(this);
 
-    /*ä¿¡å·å’Œæ§½*/
-    connect(timer, SIGNAL(timeout()), this, SLOT(readFarme()));  // æ—¶é—´åˆ°ï¼Œè¯»å–å½“å‰æ‘„åƒå¤´ä¿¡æ¯
-    connect(ui.openCam, SIGNAL(clicked()), this, SLOT(openCamara()));
-    connect(ui.takePic, SIGNAL(clicked()), this, SLOT(takingPictures()));
-    connect(ui.closeCam, SIGNAL(clicked()), this, SLOT(closeCamara()));
-    connect(ui.calib, SIGNAL(clicked()), this, SLOT(startCalibrate()));
-    connect(ui.open, SIGNAL(clicked()), this, SLOT(fileOpenActionSlot()));
+	/*ÐÅºÅºÍ²Û*/
+	connect(timer, SIGNAL(timeout()), this, SLOT(readFarme()));  // Ê±¼äµ½£¬¶ÁÈ¡µ±Ç°ÉãÏñÍ·ÐÅÏ¢
+	connect(ui.openCam, SIGNAL(clicked()), this, SLOT(openCamara()));
+	connect(ui.takePic, SIGNAL(clicked()), this, SLOT(takingPictures()));
+	connect(ui.closeCam, SIGNAL(clicked()), this, SLOT(closeCamara()));
+	connect(ui.calib, SIGNAL(clicked()), this, SLOT(startCalibrate()));
+	connect(ui.open, SIGNAL(clicked()), this, SLOT(fileOpenActionSlot()));
 
-    // connect(ui.imageList);
-    connect(ui.imageList, &QListWidget::itemClicked, this, &CalibrationTool::handleListItemClick);
+	// connect(ui.imageList);
+	connect(ui.imageList, &QListWidget::itemClicked, this, &CalibrationTool::handleListItemClick);
 
+	// »­ÌõÐÎÍ¼ºÍÈýÎ¬Í¼
+	createBarChart();
+	createPatternCentric();
 }
 
 CalibrationTool::~CalibrationTool()
@@ -28,314 +38,559 @@ CalibrationTool::~CalibrationTool()
 
 
 void CalibrationTool::initImageList() {
-    //createAction();
-    //createMenu();
-    //createContentMenu();
-    //å®šä¹‰QListWidgetå¯¹è±¡
-    //è®¾ç½®QListWidgetçš„æ˜¾ç¤ºæ¨¡å¼
-    ui.imageList->setViewMode(QListView::ListMode);
-    //è®¾ç½®QListWidgetä¸­å•å…ƒé¡¹çš„å›¾ç‰‡å¤§å°
-    ui.imageList->setIconSize(QSize(IMAGE_LIST_WIDTH, IMAGE_LIST_WIDTH));
-    //è®¾ç½®QListWidgetä¸­å•å…ƒé¡¹çš„é—´è·
-    ui.imageList->setSpacing(IMAGE_PADDING);
-    //è®¾ç½®è‡ªåŠ¨é€‚åº”å¸ƒå±€è°ƒæ•´(Adjusté€‚åº”ï¼ŒFixedä¸é€‚åº”)ï¼Œé»˜è®¤ä¸é€‚åº”
-    ui.imageList->setResizeMode(QListWidget::Adjust);
-    //è®¾ç½®ä¸èƒ½ç§»åŠ¨
-    ui.imageList->setMovement(QListWidget::Static);
-    //setAttribute(Qt::WA_Hover, true)
-    ui.imageList->setAttribute(Qt::WA_Hover, true);
+	//createAction();
+	//createMenu();
+	//createContentMenu();
+	//¶¨ÒåQListWidget¶ÔÏó
+	//ÉèÖÃQListWidgetµÄÏÔÊ¾Ä£Ê½
+	ui.imageList->setViewMode(QListView::ListMode);
+	//ÉèÖÃQListWidgetÖÐµ¥ÔªÏîµÄÍ¼Æ¬´óÐ¡
+	ui.imageList->setIconSize(QSize(IMAGE_LIST_WIDTH, IMAGE_LIST_WIDTH));
+	//ÉèÖÃQListWidgetÖÐµ¥ÔªÏîµÄ¼ä¾à
+	ui.imageList->setSpacing(IMAGE_PADDING);
+	//ÉèÖÃ×Ô¶¯ÊÊÓ¦²¼¾Öµ÷Õû(AdjustÊÊÓ¦£¬Fixed²»ÊÊÓ¦)£¬Ä¬ÈÏ²»ÊÊÓ¦
+	ui.imageList->setResizeMode(QListWidget::Adjust);
+	//ÉèÖÃ²»ÄÜÒÆ¶¯
+	ui.imageList->setMovement(QListWidget::Static);
+	//setAttribute(Qt::WA_Hover, true)
+	ui.imageList->setAttribute(Qt::WA_Hover, true);
 }
 void CalibrationTool::openCamara()
 {
-    cam = VideoCapture();//æ‰“å¼€æ‘„åƒå¤´ï¼Œä»Žæ‘„åƒå¤´ä¸­èŽ·å–è§†é¢‘
-    cam.open(1);
-    if (!cam.isOpened()) {
-        cam.open(0);
-    }
-    ui.openCam->setIcon(QIcon(":/picture/picture/openning.png"));
-    // è®¾ç½®æ¯ä¸€å¸§çš„å¤§å°ä¸ºæŒ‡å®šå€¼
-    cam.set(CAP_PROP_FRAME_WIDTH, IMAGE_WIN_WIDTH);
-    cam.set(CAP_PROP_FRAME_HEIGHT, IMAGE_WIN_HEIGHT);
-    timer->start(SAMPLE_RATE + 3);              // å¼€å§‹è®¡æ—¶ï¼Œè¶…æ—¶åˆ™å‘å‡ºtimeout()ä¿¡å·
+	cam = cv::VideoCapture();//´ò¿ªÉãÏñÍ·£¬´ÓÉãÏñÍ·ÖÐ»ñÈ¡ÊÓÆµ
+	cam.open(1);
+	if (!cam.isOpened()) {
+		cam.open(0);
+	}
+	ui.openCam->setIcon(QIcon(":/picture/picture/openning.png"));
+	// ÉèÖÃÃ¿Ò»Ö¡µÄ´óÐ¡ÎªÖ¸¶¨Öµ
+	cam.set(cv::CAP_PROP_FRAME_WIDTH, IMAGE_WIN_WIDTH);
+	cam.set(cv::CAP_PROP_FRAME_HEIGHT, IMAGE_WIN_HEIGHT);
+	timer->start(SAMPLE_RATE + 3);              // ¿ªÊ¼¼ÆÊ±£¬³¬Ê±Ôò·¢³ötimeout()ÐÅºÅ
 }
 
 /*********************************
-********* è¯»å–æ‘„åƒå¤´ä¿¡æ¯ ***********
+********* ¶ÁÈ¡ÉãÏñÍ·ÐÅÏ¢ ***********
 **********************************/
 void CalibrationTool::readFarme()
 {
-    cam >> frame;// ä»Žæ‘„åƒå¤´ä¸­æŠ“å–å¹¶è¿”å›žæ¯ä¸€å¸§
-    Mat flipedFrame;
-    flip(frame, flipedFrame, 1);
-    // å°†é¢œè‰²æ ¼å¼ä»ŽBGRè½¬æ¢ä¸ºRGB
-    cvtColor(flipedFrame, flipedFrame, cv::COLOR_BGR2RGB);
-    // å°†æŠ“å–åˆ°çš„å¸§ï¼Œè½¬æ¢ä¸ºQImageæ ¼å¼ã€‚QImage::Format_RGB888ä¸åŒçš„æ‘„åƒå¤´ç”¨ä¸åŒçš„æ ¼å¼ã€‚
-    QImage image(flipedFrame.data, flipedFrame.cols, flipedFrame.rows, flipedFrame.step, QImage::Format_RGB888);
-    //ui.imageWindow->setPixmap(QPixmap::fromImage(image));  // å°†å›¾ç‰‡æ˜¾ç¤ºåˆ°labelä¸Š
-    //åˆ›å»ºæ˜¾ç¤ºå®¹å™¨
-    QGraphicsScene* scene = new QGraphicsScene;
-    //å‘å®¹å™¨ä¸­æ·»åŠ æ–‡ä»¶è·¯å¾„ä¸ºfileNameï¼ˆQStringç±»åž‹ï¼‰çš„æ–‡ä»¶
-    scene->addPixmap(QPixmap::fromImage(image));
-    //å€ŸåŠ©graphicsViewï¼ˆQGraphicsViewç±»ï¼‰æŽ§ä»¶æ˜¾ç¤ºå®¹å™¨çš„å†…å®¹
-    ui.imageWindow->setScene(scene);
-    //å¼€å§‹æ˜¾ç¤º
-    ui.imageWindow->show();
+	cam >> frame;// ´ÓÉãÏñÍ·ÖÐ×¥È¡²¢·µ»ØÃ¿Ò»Ö¡
+	cv::Mat flipedFrame;
+	flip(frame, flipedFrame, 1);
+	// ½«ÑÕÉ«¸ñÊ½´ÓBGR×ª»»ÎªRGB
+	cvtColor(flipedFrame, flipedFrame, cv::COLOR_BGR2RGB);
+	// ½«×¥È¡µ½µÄÖ¡£¬×ª»»ÎªQImage¸ñÊ½¡£QImage::Format_RGB888²»Í¬µÄÉãÏñÍ·ÓÃ²»Í¬µÄ¸ñÊ½¡£
+	QImage image(flipedFrame.data, flipedFrame.cols, flipedFrame.rows, flipedFrame.step, QImage::Format_RGB888);
+	//ui.imageWindow->setPixmap(QPixmap::fromImage(image));  // ½«Í¼Æ¬ÏÔÊ¾µ½labelÉÏ
+	//´´½¨ÏÔÊ¾ÈÝÆ÷
+	QGraphicsScene* scene = new QGraphicsScene;
+	//ÏòÈÝÆ÷ÖÐÌí¼ÓÎÄ¼þÂ·¾¶ÎªfileName£¨QStringÀàÐÍ£©µÄÎÄ¼þ
+	scene->addPixmap(QPixmap::fromImage(image));
+	//½èÖúgraphicsView£¨QGraphicsViewÀà£©¿Ø¼þÏÔÊ¾ÈÝÆ÷µÄÄÚÈÝ
+	ui.imageWindow->setScene(scene);
+	//¿ªÊ¼ÏÔÊ¾
+	ui.imageWindow->show();
 }
 
 
 void CalibrationTool::takingPictures()
 {
-    if (!cam.isOpened()) {
-        QMessageBox::warning(this, tr("warning"), tr("please open camera"), QMessageBox::Ok);
-        return;
-    }
-    cam >> frame;// ä»Žæ‘„åƒå¤´ä¸­æŠ“å–å¹¶è¿”å›žæ¯ä¸€å¸§
-    Mat flipedFrame;
-    flip(frame, flipedFrame, 1);
-    cvtColor(flipedFrame, flipedFrame, cv::COLOR_BGR2RGB);
+	if (!cam.isOpened()) {
+		QMessageBox::warning(this, tr("warning"), tr("please open camera"), QMessageBox::Ok);
+		return;
+	}
+	cam >> frame;// ´ÓÉãÏñÍ·ÖÐ×¥È¡²¢·µ»ØÃ¿Ò»Ö¡
+	cv::Mat flipedFrame;
+	flip(frame, flipedFrame, 1);
+	cvtColor(flipedFrame, flipedFrame, cv::COLOR_BGR2RGB);
 
-    // è¿™é‡Œè®¾ç½®Matåœ¨mapé‡Œçš„keyä¸ºimageNameMapçš„size
-    this->camImageMap[this->imageNameMap.size()] = flipedFrame;
-    this->imageNameMap[this->imageNameMap.size()] = "";
+	// ÕâÀïÉèÖÃMatÔÚmapÀïµÄkeyÎªimageNameMapµÄsize
+	this->camImageMap[this->imageNameMap.size()] = flipedFrame;
+	this->imageNameMap[this->imageNameMap.size()] = "";
 
-    QImage image((const uchar*)flipedFrame.data, flipedFrame.size().width, flipedFrame.size().height, QImage::Format_RGB888);
-    QPixmap pixmap = QPixmap::fromImage(image);
-    double ratio = static_cast<double>(image.height()) / image.width();
-    QListWidgetItem* item = new QListWidgetItem();
-    item->setIcon(QIcon(pixmap)); // æˆ–è€… item->setIcon(QIcon::fromImage(image));
-    item->setSizeHint(QSize(IMAGE_LIST_WIDTH, IMAGE_LIST_WIDTH * ratio));
-    item->setText(QString::number(this->imageNameMap.size()));
+	QImage image((const uchar*)flipedFrame.data, flipedFrame.size().width, flipedFrame.size().height, QImage::Format_RGB888);
+	QPixmap pixmap = QPixmap::fromImage(image);
+	double ratio = static_cast<double>(image.height()) / image.width();
+	QListWidgetItem* item = new QListWidgetItem();
+	item->setIcon(QIcon(pixmap)); // »òÕß item->setIcon(QIcon::fromImage(image));
+	item->setSizeHint(QSize(IMAGE_LIST_WIDTH, IMAGE_LIST_WIDTH * ratio));
+	item->setText(QString::number(this->imageNameMap.size()));
 
-    QDateTime currentDateTime = QDateTime::currentDateTime(); // èŽ·å–å½“å‰æ—¶é—´
-    qint64 timestamp = currentDateTime.toSecsSinceEpoch(); // è½¬æ¢ä¸ºæ—¶é—´æˆ³ï¼ˆç§’çº§åˆ«ï¼‰
-    QString timestampText = QString::number(timestamp); // å°†æ—¶é—´æˆ³è½¬æ¢ä¸ºå­—ç¬¦ä¸²
-    
-    item->setTextAlignment(Qt::AlignVCenter);
-    item->setToolTip(timestampText + ".tmp.png");
+	QDateTime currentDateTime = QDateTime::currentDateTime(); // »ñÈ¡µ±Ç°Ê±¼ä
+	qint64 timestamp = currentDateTime.toSecsSinceEpoch(); // ×ª»»ÎªÊ±¼ä´Á£¨Ãë¼¶±ð£©
+	QString timestampText = QString::number(timestamp); // ½«Ê±¼ä´Á×ª»»Îª×Ö·û´®
 
-    ui.imageList->addItem(item);
+	item->setTextAlignment(Qt::AlignVCenter);
+	item->setToolTip(timestampText + ".tmp.png");
 
-    // æ‹ç…§åŽæ£€æµ‹è§’ç‚¹
-    this->imageCorners.push_back(findOneCorners(flipedFrame, BOARD_SIZE));
+	ui.imageList->addItem(item);
+
+	// ÅÄÕÕºó¼ì²â½Çµã
+	this->imageCorners.push_back(findOneCorners(flipedFrame, cv::BOARD_SIZE));
 }
 
 
 /*******************************
-***å…³é—­æ‘„åƒå¤´ï¼Œé‡Šæ”¾èµ„æºï¼Œå¿…é¡»é‡Šæ”¾***
+***¹Ø±ÕÉãÏñÍ·£¬ÊÍ·Å×ÊÔ´£¬±ØÐëÊÍ·Å***
 ********************************/
 void CalibrationTool::closeCamara()
 {
-    ui.openCam->setIcon(QIcon(":/picture/picture/camera.png"));
-    timer->stop(); // åœæ­¢è¯»å–æ•°æ®ã€‚
-    cam.release();
-    QGraphicsScene* scene = new QGraphicsScene;
-    ui.imageWindow->setScene(scene);
-    //å¼€å§‹æ˜¾ç¤º
-    ui.imageWindow->show();
-    //ui.imageWindow->clear();
+	ui.openCam->setIcon(QIcon(":/picture/picture/camera.png"));
+	timer->stop(); // Í£Ö¹¶ÁÈ¡Êý¾Ý¡£
+	cam.release();
+	QGraphicsScene* scene = new QGraphicsScene;
+	ui.imageWindow->setScene(scene);
+	//¿ªÊ¼ÏÔÊ¾
+	ui.imageWindow->show();
+	//ui.imageWindow->clear();
 }
 
 
 void CalibrationTool::startCalibrate() {
-    // å¼¹çª—æç¤ºæœªæ·»åŠ å›¾ç‰‡
-    if (this->fileNames.length() == 0) {
-        QMessageBox::warning(this, tr("warning"),
-            tr("You haven't upload any image"));
+	// µ¯´°ÌáÊ¾Î´Ìí¼ÓÍ¼Æ¬
+	if (this->fileNames.length() == 0) {
+		QMessageBox::warning(this, tr("warning"),
+			tr("You haven't upload any image"));
 
-        return;
-    }
-    // å½“å›¾ç‰‡å°äºŽ10å¼ çš„æ—¶å€™ï¼Œæç¤ºæ˜¯å¦ç»§ç»­æ ‡å®š
-    if (this->fileNames.length() <= 10) {
-        int reply = QMessageBox::warning(this, tr("warning"),
-            tr("You should upload more than 10 images, would you want to continue?"),
-            QMessageBox::Yes, QMessageBox::No);
-        if (reply == QMessageBox::No) {
-            return;
-        }
-    }
-    //ui.openCam->setEnabled(false);
-    //ui.closeCam->setEnabled(false);
-    //ui.takePic->setEnabled(false);
-    //ui.calib->setEnabled(false);
-    // 
-    cv::Mat image = cv::imread(this->fileNames[0].toStdString());
-    // this->fullCalibResults = calibrate(fileNames, NORMAL_CAM);
-    this->calibResults = calibarteWithCorners(this->imageCorners, image.size(), BOARD_SIZE, NORMAL_CAM);
-    //qDebug() 
-       // << this->calibResults.rvecs
-        //<< this->calibResults.tvecs
-        //<< this->calibResults.rvecs
-        //<< endl;
-    //ui.openCam->setEnabled(true);
-    //ui.closeCam->setEnabled(true);
-    //ui.takePic->setEnabled(true);
-    //ui.calib->setEnabled(true);
+		return;
+	}
+	// µ±Í¼Æ¬Ð¡ÓÚ10ÕÅµÄÊ±ºò£¬ÌáÊ¾ÊÇ·ñ¼ÌÐø±ê¶¨
+	if (this->fileNames.length() <= 10) {
+		int reply = QMessageBox::warning(this, tr("warning"),
+			tr("You should upload more than 10 images, would you want to continue?"),
+			QMessageBox::Yes, QMessageBox::No);
+		if (reply == QMessageBox::No) {
+			return;
+		}
+	}
+	//ui.openCam->setEnabled(false);
+	//ui.closeCam->setEnabled(false);
+	//ui.takePic->setEnabled(false);
+	//ui.calib->setEnabled(false);
+	// 
+	cv::Mat image = cv::imread(this->fileNames[0].toStdString());
+	// this->fullCalibResults = calibrate(fileNames, NORMAL_CAM);
+	this->calibResults = calibarteWithCorners(this->imageCorners, image.size(), cv::BOARD_SIZE, NORMAL_CAM);
+	//qDebug() 
+	   // << this->calibResults.rvecs
+		//<< this->calibResults.tvecs
+		//<< this->calibResults.rvecs
+		//<< endl;
+	//ui.openCam->setEnabled(true);
+	//ui.closeCam->setEnabled(true);
+	//ui.takePic->setEnabled(true);
+	//ui.calib->setEnabled(true);
 }
-// åœ¨çª—å£ç±»çš„å®žçŽ°æ–‡ä»¶ä¸­å®žçŽ°æ§½å‡½æ•°æ¥æ›´æ–°è¿›åº¦æ¡
+// ÔÚ´°¿ÚÀàµÄÊµÏÖÎÄ¼þÖÐÊµÏÖ²Ûº¯ÊýÀ´¸üÐÂ½ø¶ÈÌõ
 void CalibrationTool::updateProgress(int value)
 {
-    // æ›´æ–°è¿›åº¦æ¡çš„å€¼
-    this->progressBar->setValue(value);
+	// ¸üÐÂ½ø¶ÈÌõµÄÖµ
+	this->progressBar->setValue(value);
 }
 
 
 void CalibrationTool::fileOpenActionSlot()
 {
-    selectFile();
+	selectFile();
 }
 
-// åˆ›å»ºè¿›åº¦æ¡
+// ´´½¨½ø¶ÈÌõ
 void CalibrationTool::createProgressBar(bool isBatch) {
-    // åˆ›å»ºè¿›åº¦æ¡å¯¹è¯æ¡†
-    // this->progressBar = new QProgressDialog ("Checking corner points...", "Cancel", 0, 100);
-    // this->progressBar->setWindowTitle("Progress");
-    if (!this->progressBar)
-    {
-        this->progressBar = new QProgressDialog("Checking corner points...", nullptr, 0, 100);
-        this->progressBar->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
-        this->progressBar->setWindowModality(Qt::WindowModal);
-        this->progressBar->setMinimumDuration(0);
-        this->progressBar->setCancelButton(nullptr); // ç§»é™¤å–æ¶ˆæŒ‰é’®
-        Qt::WindowFlags flags = this->progressBar->windowFlags();
-        flags &= ~Qt::WindowCloseButtonHint;  // ç§»é™¤å…³é—­æŒ‰é’®
-        this->progressBar->setWindowFlags(flags);
+	// ´´½¨½ø¶ÈÌõ¶Ô»°¿ò
+	// this->progressBar = new QProgressDialog ("Checking corner points...", "Cancel", 0, 100);
+	// this->progressBar->setWindowTitle("Progress");
+	if (!this->progressBar)
+	{
+		this->progressBar = new QProgressDialog("Checking corner points...", nullptr, 0, 100);
+		this->progressBar->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+		this->progressBar->setWindowModality(Qt::WindowModal);
+		this->progressBar->setMinimumDuration(0);
+		this->progressBar->setCancelButton(nullptr); // ÒÆ³ýÈ¡Ïû°´Å¥
+		Qt::WindowFlags flags = this->progressBar->windowFlags();
+		flags &= ~Qt::WindowCloseButtonHint;  // ÒÆ³ý¹Ø±Õ°´Å¥
+		this->progressBar->setWindowFlags(flags);
 
-        // è®¾ç½®å›ºå®šçš„å®½åº¦å’Œé«˜åº¦
-        this->progressBar->setFixedSize(250, 80);
-        this->progressBar->setStyleSheet(
-            "QProgressBar { background-color: white; text-align: center; border-radius:5px; font-weight:bolder }"
-            "QProgressBar::chunk { background-color:#3366CC; border-radius:5px }"
-        );
-    }
+		// ÉèÖÃ¹Ì¶¨µÄ¿í¶ÈºÍ¸ß¶È
+		this->progressBar->setFixedSize(250, 80);
+		this->progressBar->setStyleSheet(
+			"QProgressBar { background-color: white; text-align: center; border-radius:5px; font-weight:bolder }"
+			"QProgressBar::chunk { background-color:#3366CC; border-radius:5px }"
+		);
+	}
 
-    if (isBatch)
-    {
-        connect(this, SIGNAL(progressUpdate(int)), this, SLOT(updateProgress(int)));
-    }
+	if (isBatch)
+	{
+		connect(this, SIGNAL(progressUpdate(int)), this, SLOT(updateProgress(int)));
+	}
 
-    this->progressBar->show();
+	this->progressBar->show();
 }
 
 
 /***************************************
-* Qtä¸­ä½¿ç”¨æ–‡ä»¶é€‰æ‹©å¯¹è¯æ¡†æ­¥éª¤å¦‚ä¸‹:
-* 1.å®šä¹‰ä¸€ä¸ªQFileDialogå¯¹è±¡
-* 2.è®¾ç½®è·¯å¾„ã€è¿‡æ»¤å™¨ç­‰å±žæ€§
+* QtÖÐÊ¹ÓÃÎÄ¼þÑ¡Ôñ¶Ô»°¿ò²½ÖèÈçÏÂ:
+* 1.¶¨ÒåÒ»¸öQFileDialog¶ÔÏó
+* 2.ÉèÖÃÂ·¾¶¡¢¹ýÂËÆ÷µÈÊôÐÔ
 ******************************************/
 void CalibrationTool::selectFile() {
-    //å®šä¹‰æ–‡ä»¶å¯¹è¯æ¡†ç±»
-    QFileDialog* fileDialog = new QFileDialog(this);
-    //å®šä¹‰æ–‡ä»¶å¯¹è¯æ¡†æ ‡é¢˜
-    fileDialog->setWindowTitle(tr("open fold"));
-    //è®¾ç½®é»˜è®¤æ–‡ä»¶è·¯å¾„
-    fileDialog->setDirectory(".");
-    //è®¾ç½®æ–‡ä»¶è¿‡æ»¤å™¨
-    fileDialog->setNameFilter(tr("Images(*.png *.jpg *.jpeg * .bmp)"));
-    //è®¾ç½®å¯ä»¥é€‰æ‹©å¤šä¸ªæ–‡ä»¶ï¼Œé»˜è®¤ä¸ºåªèƒ½é€‰æ‹©ä¸€ä¸ªæ–‡ä»¶QF ileDialog: :ExistingFiles
-    fileDialog->setFileMode(QFileDialog::ExistingFiles);
-    //è®¾ç½®è§†å›¾æ¨¡å¼
-    fileDialog->setViewMode(QFileDialog::Detail);
-    //æ‰“å°æ‰€æœ‰é€‰æ‹©çš„æ–‡ä»¶çš„è·¯å¾„
-    if (fileDialog->exec())
-    {
-        // é€‰æ‹©å›¾ç‰‡ä¸Šä¼ çš„æ—¶å€™æ£€æµ‹
-        // this->createProgressBar(false);
+	//¶¨ÒåÎÄ¼þ¶Ô»°¿òÀà
+	QFileDialog* fileDialog = new QFileDialog(this);
+	//¶¨ÒåÎÄ¼þ¶Ô»°¿ò±êÌâ
+	fileDialog->setWindowTitle(tr("open fold"));
+	//ÉèÖÃÄ¬ÈÏÎÄ¼þÂ·¾¶
+	fileDialog->setDirectory(".");
+	//ÉèÖÃÎÄ¼þ¹ýÂËÆ÷
+	fileDialog->setNameFilter(tr("Images(*.png *.jpg *.jpeg * .bmp)"));
+	//ÉèÖÃ¿ÉÒÔÑ¡Ôñ¶à¸öÎÄ¼þ£¬Ä¬ÈÏÎªÖ»ÄÜÑ¡ÔñÒ»¸öÎÄ¼þQF ileDialog: :ExistingFiles
+	fileDialog->setFileMode(QFileDialog::ExistingFiles);
+	//ÉèÖÃÊÓÍ¼Ä£Ê½
+	fileDialog->setViewMode(QFileDialog::Detail);
+	//´òÓ¡ËùÓÐÑ¡ÔñµÄÎÄ¼þµÄÂ·¾¶
+	if (fileDialog->exec())
+	{
+		// Ñ¡ÔñÍ¼Æ¬ÉÏ´«µÄÊ±ºò¼ì²â
+		// this->createProgressBar(false);
 
-        // è¿™é‡Œæ¯æ¬¡éƒ½ä¼šé‡æ–°èµ‹å€¼ï¼Œæ‰€ä»¥ä¸‹é¢ç”¨mapå­˜
-        fileNames = fileDialog->selectedFiles();
-        int len = this->imageNameMap.size();
-        for (int i = 0; i < fileNames.length(); i++) {
-            fileNames[i] = QDir::toNativeSeparators(fileNames[i]);
-            this->imageNameMap[i + len] = fileNames[i];
-            // åœ¨ä¸Šä¼ å›¾ç‰‡çš„æ—¶å€™æ£€æµ‹è§’ç‚¹
-            // this->imageCorners.push_back(findOneCorners(fileNames[i], BOARD_SIZE));
-            // this->progressBar->setValue((i+1)*100/ fileNames.length());
-        }
-    }
+		// ÕâÀïÃ¿´Î¶¼»áÖØÐÂ¸³Öµ£¬ËùÒÔÏÂÃæÓÃmap´æ
+		fileNames = fileDialog->selectedFiles();
+		int len = this->imageNameMap.size();
+		for (int i = 0; i < fileNames.length(); i++) {
+			fileNames[i] = QDir::toNativeSeparators(fileNames[i]);
+			this->imageNameMap[i + len] = fileNames[i];
+			// ÔÚÉÏ´«Í¼Æ¬µÄÊ±ºò¼ì²â½Çµã
+			// this->imageCorners.push_back(findOneCorners(fileNames[i], BOARD_SIZE));
+			// this->progressBar->setValue((i+1)*100/ fileNames.length());
+		}
+	}
 
-    showImageList();
-    for (auto tmp : fileNames)
-    {
-        qDebug() << tmp << endl;
-    }
+	showImageList();
+	for (auto tmp : fileNames)
+	{
+		qDebug() << tmp << endl;
+	}
 }
 
 /***************************************
-*Qtä¸­ä½¿ç”¨æ–‡ä»¶é€‰æ‹©å¯¹è¯æ¡†æ­¥éª¤å¦‚ä¸‹:
-* 1.å®šä¹‰ä¸€ä¸ªQListWidgetå¯¹è±¡
-* 2.è®¾ç½®ViewModeç­‰å±žæ€§
-* 3.å®šä¹‰å•å…ƒé¡¹å¹¶æ·»åŠ åˆ°QL istWidgetä¸­
-* 4.è°ƒç”¨QListWidgetå¯¹è±¡çš„show()æ–¹æ³•
+*QtÖÐÊ¹ÓÃÎÄ¼þÑ¡Ôñ¶Ô»°¿ò²½ÖèÈçÏÂ:
+* 1.¶¨ÒåÒ»¸öQListWidget¶ÔÏó
+* 2.ÉèÖÃViewModeµÈÊôÐÔ
+* 3.¶¨Òåµ¥ÔªÏî²¢Ìí¼Óµ½QL istWidgetÖÐ
+* 4.µ÷ÓÃQListWidget¶ÔÏóµÄshow()·½·¨
 * ****************************************/
 void CalibrationTool::showImageList() {
 
-    int stIndex = this->imageCorners.size();
-    this->createProgressBar(false);
-    for (int i = 0; i < fileNames.length(); i++) {
-        // å®šä¹‰QListWidgetItemå¯¹è±¡
-        QListWidgetItem* imageItem = new QListWidgetItem;
-        QImage image(fileNames[i]);
-        double ratio = static_cast<double>(image.height()) / image.width();
-        // qDebug() << height << endl;
-        imageItem->setIcon(QIcon(fileNames[i]));
-        //é‡æ–°è®¾ç½®å•å…ƒé¡¹å›¾ç‰‡çš„å®½åº¦å’Œé«˜åº¦
-        imageItem->setSizeHint(QSize(IMAGE_LIST_WIDTH, IMAGE_LIST_WIDTH * ratio));
-        imageItem->setText(QString::number(stIndex + i + 1));
+	int stIndex = this->imageCorners.size();
+	this->createProgressBar(false);
+	for (int i = 0; i < fileNames.length(); i++) {
+		// ¶¨ÒåQListWidgetItem¶ÔÏó
+		QListWidgetItem* imageItem = new QListWidgetItem;
+		QImage image(fileNames[i]);
+		double ratio = static_cast<double>(image.height()) / image.width();
+		// qDebug() << height << endl;
+		imageItem->setIcon(QIcon(fileNames[i]));
+		//ÖØÐÂÉèÖÃµ¥ÔªÏîÍ¼Æ¬µÄ¿í¶ÈºÍ¸ß¶È
+		imageItem->setSizeHint(QSize(IMAGE_LIST_WIDTH, IMAGE_LIST_WIDTH * ratio));
+		imageItem->setText(QString::number(stIndex + i + 1));
 
-        // æ‚¬æµ®æ˜¾ç¤ºæ–‡ä»¶å
-        QFileInfo fileInfo(fileNames[i]);
-        QString fileName = fileInfo.fileName();
-        imageItem->setTextAlignment(Qt::AlignVCenter);
-        imageItem->setToolTip(fileName);
-        ui.imageList->addItem(imageItem);
+		// Ðü¸¡ÏÔÊ¾ÎÄ¼þÃû
+		QFileInfo fileInfo(fileNames[i]);
+		QString fileName = fileInfo.fileName();
+		imageItem->setTextAlignment(Qt::AlignVCenter);
+		imageItem->setToolTip(fileName);
+		ui.imageList->addItem(imageItem);
 
-        //åœ¨ä¸Šä¼ å›¾ç‰‡çš„æ—¶å€™æ£€æµ‹è§’ç‚¹
-        this->imageCorners.push_back(findOneCorners(fileNames[i], BOARD_SIZE));
-        this->progressBar->setValue((i + 1) * 100 / fileNames.length());
+		//ÔÚÉÏ´«Í¼Æ¬µÄÊ±ºò¼ì²â½Çµã
+		this->imageCorners.push_back(findOneCorners(fileNames[i], cv::BOARD_SIZE));
+		this->progressBar->setValue((i + 1) * 100 / fileNames.length());
 
-    }
-    //this->progressBar->setValue(100);
+	}
+	//this->progressBar->setValue(100);
 
-    //æ˜¾ç¤ºQListWidget
-    ui.imageList->show();
-    // æ‰¹é‡æ£€æµ‹è§’ç‚¹
-    // this->createProgressBar(true);
-    // this->imageCorners = findCorners(fileNames,BOARD_SIZE,this);
+	//ÏÔÊ¾QListWidget
+	ui.imageList->show();
+	// ÅúÁ¿¼ì²â½Çµã
+	// this->createProgressBar(true);
+	// this->imageCorners = findCorners(fileNames,BOARD_SIZE,this);
 
 }
 
 void CalibrationTool::handleListItemClick(QListWidgetItem* item)
 {
-    // å¤„ç† QListWidgetItem çš„ç‚¹å‡»äº‹ä»¶
-    // å¯ä»¥èŽ·å– item çš„æ•°æ®ã€ç´¢å¼•ç­‰è¿›è¡Œå¤„ç†
-    // ç¤ºä¾‹ï¼šèŽ·å– item çš„æ–‡æœ¬
-    //int index = item->text().toInt();
-    int index = ui.imageList->row(item);
+	// ´¦Àí QListWidgetItem µÄµã»÷ÊÂ¼þ
+	// ¿ÉÒÔ»ñÈ¡ item µÄÊý¾Ý¡¢Ë÷ÒýµÈ½øÐÐ´¦Àí
+	// Ê¾Àý£º»ñÈ¡ item µÄÎÄ±¾
+	//int index = item->text().toInt();
+	int index = ui.imageList->row(item);
 
-    qDebug() << "Clicked item text: " << index << "\n";
-    qDebug() << this->imageCorners.size() << "\n";
-    vector<cv::Point2f> corners = this->imageCorners[index];
-    QString fileName = this->imageNameMap[index];
-    cv::Mat flipedFrame;
-    if (!fileName.isEmpty()) {
-        flipedFrame = cv::imread(fileName.toStdString());
-        // å°†é¢œè‰²æ ¼å¼ä»ŽBGRè½¬æ¢ä¸ºRGB
-        cvtColor(flipedFrame, flipedFrame, cv::COLOR_BGR2RGB);
-    }
-    else
-    {
-        flipedFrame = this->camImageMap[index];
-    }
-    cv::drawChessboardCorners(flipedFrame, Size(9, 6), corners, !corners.empty());
-    
-    // å°†æŠ“å–åˆ°çš„å¸§ï¼Œè½¬æ¢ä¸ºQImageæ ¼å¼ã€‚QImage::Format_RGB888ä¸åŒçš„æ‘„åƒå¤´ç”¨ä¸åŒçš„æ ¼å¼ã€‚
-    QImage image(flipedFrame.data, flipedFrame.cols, flipedFrame.rows, flipedFrame.step, QImage::Format_RGB888);
-    //åˆ›å»ºæ˜¾ç¤ºå®¹å™¨
-    QGraphicsScene* scene = new QGraphicsScene;
-    //å‘å®¹å™¨ä¸­æ·»åŠ æ–‡ä»¶è·¯å¾„ä¸ºfileNameï¼ˆQStringç±»åž‹ï¼‰çš„æ–‡ä»¶
-    scene->addPixmap(QPixmap::fromImage(image));
-    //å€ŸåŠ©graphicsViewï¼ˆQGraphicsViewç±»ï¼‰æŽ§ä»¶æ˜¾ç¤ºå®¹å™¨çš„å†…å®¹
-    ui.imageWindow->setScene(scene);
-    //å¼€å§‹æ˜¾ç¤º
-    ui.imageWindow->show();
+	qDebug() << "Clicked item text: " << index << "\n";
+	qDebug() << this->imageCorners.size() << "\n";
+	vector<cv::Point2f> corners = this->imageCorners[index];
+	QString fileName = this->imageNameMap[index];
+	cv::Mat flipedFrame;
+	if (!fileName.isEmpty()) {
+		flipedFrame = cv::imread(fileName.toStdString());
+		// ½«ÑÕÉ«¸ñÊ½´ÓBGR×ª»»ÎªRGB
+		cvtColor(flipedFrame, flipedFrame, cv::COLOR_BGR2RGB);
+	}
+	else
+	{
+		flipedFrame = this->camImageMap[index];
+	}
+	cv::drawChessboardCorners(flipedFrame, cv::Size(9, 6), corners, !corners.empty());
+
+	// ½«×¥È¡µ½µÄÖ¡£¬×ª»»ÎªQImage¸ñÊ½¡£QImage::Format_RGB888²»Í¬µÄÉãÏñÍ·ÓÃ²»Í¬µÄ¸ñÊ½¡£
+	QImage image(flipedFrame.data, flipedFrame.cols, flipedFrame.rows, flipedFrame.step, QImage::Format_RGB888);
+	//´´½¨ÏÔÊ¾ÈÝÆ÷
+	QGraphicsScene* scene = new QGraphicsScene;
+	//ÏòÈÝÆ÷ÖÐÌí¼ÓÎÄ¼þÂ·¾¶ÎªfileName£¨QStringÀàÐÍ£©µÄÎÄ¼þ
+	scene->addPixmap(QPixmap::fromImage(image));
+	//½èÖúgraphicsView£¨QGraphicsViewÀà£©¿Ø¼þÏÔÊ¾ÈÝÆ÷µÄÄÚÈÝ
+	ui.imageWindow->setScene(scene);
+	//¿ªÊ¼ÏÔÊ¾
+	ui.imageWindow->show();
+}
+
+
+/***************************************
+*** QtÖÐÊ¹ÓÃQCharts»­ÌõÐÎÍ¼BarChart ***
+*****************************************/
+void CalibrationTool::createBarChart() {
+	// ÌõÐÎÍ¼Êý¾Ý
+	QBarSet* projectionError = new QBarSet("Projection Error");
+	vector<double> projectionError_ = { 3.0032143514447018e-01, 2.5005490108190759e-01, 2.2378858466658030e-01,
+				   1.6412628748340338e-01, 1.9050650570901181e-01, 1.8053703768600146e-01,
+				   2.1210603721570268e-01, 2.4443632141393190e-01, 2.6233146806962876e-01 };
+	// »­¾ùÖµÏß
+	// ¼ÆËãÊý¾ÝµÄ¾ùÖµ
+	double mean = 0;
+	for (int i = 0; i < projectionError_.size(); ++i) {
+		*projectionError << projectionError_[i];
+		mean += projectionError_[i];
+	}
+
+	mean /= projectionError_.size();
+	// ´´½¨QBarSeries
+	QBarSeries* series = new QBarSeries();
+	series->append(projectionError);
+
+	// Set the width of the bars
+	qreal barWidth = 1.0; // Adjust the value to your desired width
+	series->setBarWidth(barWidth);
+
+
+	QChart* chart = new QChart();
+	chart->addSeries(series);
+	chart->setTitle("Projection Error");
+	chart->setAnimationOptions(QChart::SeriesAnimations);
+	//chart->setBackgroundBrush(Qt::blue);
+
+
+	// ÓÃÓÚÏÔÊ¾Í¼±íµÄ´°¿Ú²¿¼þÀà
+	QChartView* chartView = new QChartView(chart);
+	chartView->setRenderHint(QPainter::Antialiasing);
+
+	// XYÖá±êÇ©
+	QBarCategoryAxis* axisX = new QBarCategoryAxis();
+	axisX->setTitleText("Images");
+	//axisX->append(QStringList() << "0" << "1" << "2" << "3" << "4" << "5" << "6" << "7" << "8"); // Ìí¼ÓXÖá±êÇ©
+	chart->addAxis(axisX, Qt::AlignBottom);
+
+	QValueAxis* axisY = new QValueAxis();
+	//axisY->setRange(0, 15);
+	axisY->setTitleText("Mean Erros in Pixels");
+	chart->addAxis(axisY, Qt::AlignLeft);
+	series->attachAxis(axisY);
+
+	chart->legend()->setVisible(false);
+	//chart->legend()->setAlignment(Qt::AlignBottom); /* ÏÔÊ¾ÔÚµ×²¿ */
+
+
+	// ´´½¨Ò»¸öQLineSeries¶ÔÏóÀ´»æÖÆ¾ùÖµÏß
+	QtCharts::QLineSeries* meanLine = new QtCharts::QLineSeries;
+	meanLine->setName("Mean");
+	meanLine->append(0, mean); // Ìí¼ÓÆðÊ¼µã
+	meanLine->append(projectionError_.size() - 1, mean); // Ìí¼Ó½áÊøµã
+
+	// ½«QLineSeries¶ÔÏóÌí¼Óµ½QChart¶ÔÏóÖÐ
+	chart->addSeries(meanLine);
+
+	// ½«QLineSeries¶ÔÏó°ó¶¨µ½XÖáºÍYÖá
+	meanLine->attachAxis(axisX);
+	meanLine->attachAxis(axisY);
+
+
+	// Õ¹Ê¾Í¼±í
+	QGraphicsView* histogramView = ui.histogram; // histogram ÊÇÖ®Ç°ÔÚ UI ÎÄ¼þÖÐ¶¨ÒåµÄ QGraphicsView ×é¼þ
+	QGraphicsScene* scene = new QGraphicsScene(histogramView); // ´´½¨Ò»¸ö³¡¾°¶ÔÏó£¬¹ØÁªµ½ histogramView ×é¼þ
+	// »ñÈ¡ histogram ×é¼þµÄÎ»ÖÃºÍ³ß´ç
+	QRect histogramGeometry = ui.histogram->geometry();
+
+	// ½« chartView µÄÎ»ÖÃºÍ³ß´çÉèÖÃÎªÓë histogram ÏàÍ¬
+	chartView->setGeometry(histogramGeometry);
+	chartView->resize(235, 235);
+
+
+	histogramView->setScene(scene);
+	scene->addWidget(chartView); // ½« chartView Ìí¼Óµ½³¡¾°ÖÐ
+}
+
+/***************************************
+*** QtÖÐÊ¹ÓÃQt3D»­ÈýÎ¬³¡¾°Í¼ ***
+*****************************************/
+void CalibrationTool::createPatternCentric() {
+
+	//// Ã¿ÕÅÍ¼Æ¬µÄÍâ²Î
+	//vector<cv::Mat> R;
+	//vector<cv::Mat> t;
+	//// »û±äÏµÊý
+	//double D_[] = { -3.4351280917484162e-01, 1.5909766895881644e-01, -1.2375087184036587e-06, 7.4996411884060586e-04, -4.1226886540150574e-02 };
+	//cv::Mat D = cv::Mat(1, 5, CV_64F, D_); // ´´½¨Ò»¸ö¿ÕµÄ double ÀàÐÍ¾ØÕó
+
+	//// ¶¨ÒåÐý×ª¾ØÕó R ºÍÈýÎ¬ÏòÁ¿ v
+	//cv::Mat R_ = (cv::Mat_<double>(3, 3) << 1, 0, 0, 0, 1, 0, 0, 0, 1); // Ê¾ÀýÐý×ª¾ØÕó
+	//cv::Mat v_ = (cv::Mat_<double>(3, 1) << 1, 2, 3); // Ê¾ÀýÈýÎ¬ÏòÁ¿
+
+	//// ¼ÆËãÈýÎ¬×ø±ê
+	//cv::Mat result = R_ * v_;
+
+
+	// Õ¹Ê¾Í¼±í
+	QGraphicsView* transformView = ui.transformGram; // histogram ÊÇÖ®Ç°ÔÚ UI ÎÄ¼þÖÐ¶¨ÒåµÄ QGraphicsView ×é¼þ
+	QGraphicsScene* scene = new QGraphicsScene(transformView); // ´´½¨Ò»¸ö³¡¾°¶ÔÏó£¬¹ØÁªµ½ histogramView ×é¼þ
+
+	// Root entity
+	Qt3DCore::QEntity* rootEntity = new Qt3DCore::QEntity();
+	// 3D Window
+	Qt3DExtras::Qt3DWindow* view = new Qt3DExtras::Qt3DWindow();
+	view->defaultFrameGraph()->setClearColor(QColor(QRgb(0xffffffff)));
+	QWidget* container = QWidget::createWindowContainer(view);
+	QSize screenSize = view->screen()->size();
+	container->setMinimumSize(QSize(200, 100));
+	container->setMaximumSize(screenSize);
+	view->setRootEntity(rootEntity);
+
+	QWidget* widget = new QWidget;
+	// layout
+	QHBoxLayout* hLayout = new QHBoxLayout(widget);
+	QVBoxLayout* vLayout = new QVBoxLayout();
+	vLayout->setAlignment(Qt::AlignTop);
+	hLayout->addWidget(container, 1);
+	hLayout->addLayout(vLayout);
+	widget->setWindowTitle(QStringLiteral("Basic shapes"));
+
+	// Camera
+	Qt3DRender::QCamera* cameraEntity = view->camera();
+	// For camera controls
+	Qt3DExtras::QFirstPersonCameraController* camController = new Qt3DExtras::QFirstPersonCameraController(rootEntity);
+	cameraEntity->lens()->setPerspectiveProjection(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
+	cameraEntity->setPosition(QVector3D(30.0f, 30.0f, 30.0f));
+	cameraEntity->setUpVector(QVector3D(0, 1, 0));
+	cameraEntity->setViewCenter(QVector3D(0, 0, 0));
+	camController->setCamera(cameraEntity);
+
+	// Light
+	Qt3DCore::QEntity* lightEntity = new Qt3DCore::QEntity(rootEntity);
+	Qt3DRender::QPointLight* light = new Qt3DRender::QPointLight(lightEntity);
+	light->setColor("white");
+	light->setIntensity(1);
+	lightEntity->addComponent(light);
+	Qt3DCore::QTransform* lightTransform = new Qt3DCore::QTransform(lightEntity);
+	lightTransform->setTranslation(cameraEntity->position());
+	lightEntity->addComponent(lightTransform);
+
+
+	// Cuboid mesh
+	Qt3DExtras::QCuboidMesh* cuboid = new Qt3DExtras::QCuboidMesh();
+	// CuboidMesh Transform
+	Qt3DCore::QTransform* cuboidTransform = new Qt3DCore::QTransform();
+	cuboidTransform->setScale(1.0f);
+	cuboidTransform->setTranslation(QVector3D(10.0f, 10.0f, 10.0f));
+	// CuboidMesh Material
+	Qt3DExtras::QPhongMaterial* cuboidMaterial = new Qt3DExtras::QPhongMaterial();
+	cuboidMaterial->setDiffuse(QColor(Qt::black));
+	// Cuboid
+	Qt3DCore::QEntity* cuboidEntity = new Qt3DCore::QEntity(rootEntity);
+	cuboidEntity->addComponent(cuboid);
+	cuboidEntity->addComponent(cuboidMaterial);
+	cuboidEntity->addComponent(cuboidTransform);
+
+	// Plane mesh
+	Qt3DExtras::QPlaneMesh* planeMesh = new Qt3DExtras::QPlaneMesh();
+	planeMesh->setWidth(2);
+	planeMesh->setHeight(2);
+	// Plane transform
+	Qt3DCore::QTransform* planeTransform = new Qt3DCore::QTransform();
+	planeTransform->setScale(5.0f);
+	planeTransform->setTranslation(QVector3D(10.0f, 0.0f, 10.0f));
+	// Plane material
+	Qt3DExtras::QPhongMaterial* planeMaterial = new Qt3DExtras::QPhongMaterial();
+	planeMaterial->setDiffuse(QColor(65, 205, 82));
+	// Plane
+	Qt3DCore::QEntity* planeEntity = new Qt3DCore::QEntity(rootEntity);
+	planeEntity->addComponent(planeMesh);
+	planeEntity->addComponent(planeMaterial);
+	planeEntity->addComponent(planeTransform);
+
+	// (x¡ú,y¡ü,z¡ñ)
+	// Axis entity
+	Qt3DCore::QEntity* axisEntity = new Qt3DCore::QEntity(rootEntity);
+
+	// X-axis
+	// X-axis mesh
+	Qt3DExtras::QCylinderMesh* xAxisMesh = new Qt3DExtras::QCylinderMesh();
+	xAxisMesh->setRadius(0.05f);
+	xAxisMesh->setLength(20.0f);
+	// X-axis material
+	Qt3DExtras::QPhongMaterial* xAxisMaterial = new Qt3DExtras::QPhongMaterial();
+	xAxisMaterial->setAmbient(Qt::red); //color
+	// X-axis transform
+	Qt3DCore::QTransform* xAxisTransform = new Qt3DCore::QTransform();
+	xAxisTransform->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), 90.0f));
+	xAxisTransform->setTranslation(QVector3D(10.0f, 0.0f, 0.0f));
+	// X-axis entity
+	Qt3DCore::QEntity* xAxisEntity = new Qt3DCore::QEntity(axisEntity);
+	xAxisEntity->addComponent(xAxisMesh);
+	xAxisEntity->addComponent(xAxisMaterial);
+	xAxisEntity->addComponent(xAxisTransform);
+
+	// Y-axis
+	// Y-axis mesh
+	Qt3DExtras::QCylinderMesh* yAxisMesh = new Qt3DExtras::QCylinderMesh();
+	yAxisMesh->setRadius(0.05f);
+	yAxisMesh->setLength(20.0f);
+	// Y-axis material
+	Qt3DExtras::QPhongMaterial* zXxisMaterial = new Qt3DExtras::QPhongMaterial();
+	zXxisMaterial->setAmbient(Qt::yellow); //color
+	// Y-axis transform
+	Qt3DCore::QTransform* yAxisTransform = new Qt3DCore::QTransform();
+	yAxisTransform->setTranslation(QVector3D(0.0f, 10.0f, 0.0f));
+	// Y-axis entity
+	Qt3DCore::QEntity* yAxisEntity = new Qt3DCore::QEntity(axisEntity);
+	yAxisEntity->addComponent(yAxisMesh);
+	yAxisEntity->addComponent(zXxisMaterial);
+	yAxisEntity->addComponent(yAxisTransform);
+
+	// Z-axis
+	// Z-axis mesh
+	Qt3DExtras::QCylinderMesh* zAxisMesh = new Qt3DExtras::QCylinderMesh();
+	zAxisMesh->setRadius(0.05f);
+	zAxisMesh->setLength(20.0f);
+	// Z-axis material
+	Qt3DExtras::QPhongMaterial* zAxisMaterial = new Qt3DExtras::QPhongMaterial();
+	zAxisMaterial->setAmbient(Qt::blue); //color
+	// Z-axis transform
+	Qt3DCore::QTransform* zAxisTransform = new Qt3DCore::QTransform();
+	zAxisTransform->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), -90.0f));
+	zAxisTransform->setTranslation(QVector3D(0.0f, 0.0f, 10.0f));
+	// Z-axis entity
+	Qt3DCore::QEntity* zAxisEntity = new Qt3DCore::QEntity(axisEntity);
+	zAxisEntity->addComponent(zAxisMesh);
+	zAxisEntity->addComponent(zAxisMaterial);
+	zAxisEntity->addComponent(zAxisTransform);
+
+	// Show window
+	widget->show();
+	widget->resize(500, 500);
+
+	//scene->addWidget(widget);
 }
