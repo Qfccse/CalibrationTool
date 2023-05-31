@@ -237,6 +237,9 @@
           <property name="text">
            <string>Standard</string>
           </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
         <item>
