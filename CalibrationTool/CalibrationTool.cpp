@@ -410,13 +410,14 @@ void CalibrationTool::createBarChart() {
 	
 	// 创建一个字体对象，并设置字体大小
 	QFont fontX,fontY;
-	fontX.setPointSize(8); // 设置字体大小为10
-	fontY.setPointSize(8);
+	fontX.setPointSize(CHART_FONT_SIZE); // 设置字体大小为10
+	fontY.setPointSize(CHART_FONT_SIZE);
 
 	// XY轴标签
 	QBarCategoryAxis* axisX = new QBarCategoryAxis();
 	// axisX->setTitleText("Images");
-	for (int i = 0; i < projectionError_.size(); i+=3) {
+	int skipNum = projectionError_.size() / 10 + 1;
+	for (int i = 0; i < projectionError_.size(); i+=skipNum) {
 		axisX->append(QString::number(i+1));
 	}
 	axisX->setLabelsFont(fontX);

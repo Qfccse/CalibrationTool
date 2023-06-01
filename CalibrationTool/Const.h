@@ -18,6 +18,7 @@ using namespace std;
 #define SAMPLE_RATE 30
 #define IMAGE_PADDING 9
 #define CHART_EXPEND 55
+#define CHART_FONT_SIZE 8
 
 #define NORMAL_CAM 1
 #define FISH_EYE_CAM 2
