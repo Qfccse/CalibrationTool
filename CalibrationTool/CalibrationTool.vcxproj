@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{F4ECC89A-5941-4ACF-A8F2-573E403F4D43}</ProjectGuid>
+    <ProjectGuid>{236DE9D3-198E-4073-933C-7F3254BD5516}</ProjectGuid>
     <Keyword>QtVS_v304</Keyword>
     <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">10.0.19041.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">10.0.19041.0</WindowsTargetPlatformVersion>
@@ -55,22 +55,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <IncludePath>D:\ENVIRONMENT\LIB\opencv-4.5.1\opencv\build\include;D:\ENVIRONMENT\LIB\opencv-4.5.1\opencv\build\include\opencv2;C:\programming\opencv-4.5.1\opencv\build\include\opencv2;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\ENVIRONMENT\LIB\opencv-4.5.1\opencv\build\x64\vc15\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\workspace\cv\opencv4\opencv\build\include;D:\workspace\cv\opencv4\opencv\build\include\opencv2;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\workspace\cv\opencv4\opencv\build\x64\vc15\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <IncludePath>D:\ENVIRONMENT\LIB\opencv-4.5.1\opencv\build\include\opencv2;D:\ENVIRONMENT\LIB\opencv-4.5.1\opencv\build\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\ENVIRONMENT\LIB\opencv-4.5.1\opencv\build\x64\vc15\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Link>
-      <AdditionalDependencies>opencv_world451d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-    <ClCompile>
-      <LanguageStandard>stdcpp14</LanguageStandard>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>
       <AdditionalDependencies>opencv_world451d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>

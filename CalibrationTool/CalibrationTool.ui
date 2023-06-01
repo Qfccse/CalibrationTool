@@ -61,6 +61,11 @@
       <height>240</height>
      </rect>
     </property>
+    <property name="styleSheet">
+     <string notr="true">QgrapicsView#histogram{
+overflow: hidden;
+}</string>
+    </property>
    </widget>
    <widget class="QGraphicsView" name="transformGram">
     <property name="geometry">

@@ -58,7 +58,7 @@ FullCalibrateResults calibrate(const QStringList& fileNames, const int cameraTyp
     cv::Mat cameraMatrix, distCoeffs;
     vector<cv::Mat> rvecs, tvecs;
     double totalReprojectionError;
-    if (cameraType == NORMAL_CAM) 
+    if (cameraType == NORMAL_CAM)
     {
         totalReprojectionError = cv::calibrateCamera(objectPoints, imagePoints, gray.size(), cameraMatrix, distCoeffs, rvecs, tvecs);
     }
@@ -81,7 +81,7 @@ FullCalibrateResults calibrate(const QStringList& fileNames, const int cameraTyp
     // 计算每张图像的重投影误差
     vector<double> errors;
     for (size_t i = 0; i < objectPoints.size(); i++) {
-        double reprojectionError = calculateReprojectionError(objectPoints[i], imagePoints[i], cameraMatrix, distCoeffs, rvecs[i], tvecs[i],cameraType);
+        double reprojectionError = calculateReprojectionError(objectPoints[i], imagePoints[i], cameraMatrix, distCoeffs, rvecs[i], tvecs[i], cameraType);
         errors.push_back(reprojectionError);
         // cout << "Reprojection error for image " << i << ": " << reprojectionError << endl;
     }

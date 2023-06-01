@@ -27,10 +27,8 @@ CalibrationTool::CalibrationTool(QWidget* parent)
 
 	// connect(ui.imageList);
 	connect(ui.imageList, &QListWidget::itemClicked, this, &CalibrationTool::handleListItemClick);
-
-	// 画条形图和三维图
 	createBarChart();
-	createPatternCentric();
+	// createPatternCentric();
 }
 
 CalibrationTool::~CalibrationTool()
@@ -180,6 +178,10 @@ void CalibrationTool::startCalibrate() {
 	//ui.closeCam->setEnabled(true);
 	//ui.takePic->setEnabled(true);
 	//ui.calib->setEnabled(true);
+
+		// 画条形图和三维图
+	createBarChart();
+	createPatternCentric();
 }
 // 在窗口类的实现文件中实现槽函数来更新进度条
 void CalibrationTool::updateProgress(int value)
@@ -354,12 +356,17 @@ void CalibrationTool::handleListItemClick(QListWidgetItem* item)
 /***************************************
 *** Qt中使用QCharts画条形图BarChart ***
 *****************************************/
+
 void CalibrationTool::createBarChart() {
 	// 条形图数据
 	QBarSet* projectionError = new QBarSet("Projection Error");
+	// vector<double> projectionError_ = calibResults.reprojectionError;
 	vector<double> projectionError_ = { 3.0032143514447018e-01, 2.5005490108190759e-01, 2.2378858466658030e-01,
 				   1.6412628748340338e-01, 1.9050650570901181e-01, 1.8053703768600146e-01,
+				   2.1210603721570268e-01, 2.4443632141393190e-01, 3.0032143514447018e-01, 2.5005490108190759e-01, 2.2378858466658030e-01,
+				   1.6412628748340338e-01, 1.9050650570901181e-01, 1.8053703768600146e-01,
 				   2.1210603721570268e-01, 2.4443632141393190e-01, 2.6233146806962876e-01 };
+
 	// 画均值线
 	// 计算数据的均值
 	double mean = 0;
@@ -371,6 +378,23 @@ void CalibrationTool::createBarChart() {
 	mean /= projectionError_.size();
 	// 创建QBarSeries
 	QBarSeries* series = new QBarSeries();
+	// 创建一个自定义的悬停处理函数
+	QObject::connect(series, &QBarSeries::hovered, this, [](bool status, int index, QBarSet* barSet) {
+		if (status) {
+			qDebug() << "Hovered on bar:" << barSet->label() << "at index:" << index;
+			// 执行悬停事件的处理逻辑
+		}
+		else {
+			qDebug() << "No longer hovering on bar:" << barSet->label() << "at index:" << index;
+			// 执行取消悬停事件的处理逻辑
+		}
+		});
+
+	// 创建一个自定义的点击处理函数
+	QObject::connect(series, &QBarSeries::clicked, this, [](int index, QBarSet* barSet) {
+		qDebug() << "Clicked on bar:" << barSet->label() << "at index:" << index;
+		// 执行点击事件的处理逻辑
+		});
 	series->append(projectionError);
 
 	// Set the width of the bars
@@ -382,22 +406,32 @@ void CalibrationTool::createBarChart() {
 	chart->addSeries(series);
 	chart->setTitle("Projection Error");
 	chart->setAnimationOptions(QChart::SeriesAnimations);
-	//chart->setBackgroundBrush(Qt::blue);
 
-
-	// 用于显示图表的窗口部件类
-	QChartView* chartView = new QChartView(chart);
-	chartView->setRenderHint(QPainter::Antialiasing);
+	
+	// 创建一个字体对象，并设置字体大小
+	QFont fontX,fontY;
+	fontX.setPointSize(8); // 设置字体大小为10
+	fontY.setPointSize(8);
 
 	// XY轴标签
 	QBarCategoryAxis* axisX = new QBarCategoryAxis();
-	axisX->setTitleText("Images");
-	//axisX->append(QStringList() << "0" << "1" << "2" << "3" << "4" << "5" << "6" << "7" << "8"); // 添加X轴标签
+	// axisX->setTitleText("Images");
+	for (int i = 0; i < projectionError_.size(); i+=3) {
+		axisX->append(QString::number(i+1));
+	}
+	axisX->setLabelsFont(fontX);
 	chart->addAxis(axisX, Qt::AlignBottom);
 
 	QValueAxis* axisY = new QValueAxis();
-	//axisY->setRange(0, 15);
-	axisY->setTitleText("Mean Erros in Pixels");
+	// 设置Y轴刻度标签的角度为斜着显示
+	axisY->setLabelsAngle(-20);
+
+	// 设置刻度标签的格式，例如使用QString::number函数保留一位小数
+	axisY->setLabelFormat("%.2f");
+	// 设置Y轴刻度标签的字体
+	axisY->setLabelsFont(fontY);
+
+	// axisY->setTitleText("Mean Erros in Pixels");
 	chart->addAxis(axisY, Qt::AlignLeft);
 	series->attachAxis(axisY);
 
@@ -420,18 +454,32 @@ void CalibrationTool::createBarChart() {
 
 
 	// 展示图表
-	QGraphicsView* histogramView = ui.histogram; // histogram 是之前在 UI 文件中定义的 QGraphicsView 组件
-	QGraphicsScene* scene = new QGraphicsScene(histogramView); // 创建一个场景对象，关联到 histogramView 组件
+	//QGraphicsView* histogramView = ui.histogram; // histogram 是之前在 UI 文件中定义的 QGraphicsView 组件
+	QGraphicsScene* scene = new QGraphicsScene(ui.histogram); // 创建一个场景对象，关联到 histogramView 组件
 	// 获取 histogram 组件的位置和尺寸
 	QRect histogramGeometry = ui.histogram->geometry();
-
+	histogramGeometry.setWidth(histogramGeometry.width() + CHART_EXPEND);
+	histogramGeometry.setHeight(histogramGeometry.height() + CHART_EXPEND);
 	// 将 chartView 的位置和尺寸设置为与 histogram 相同
+	chart->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	// 用于显示图表的窗口部件类
+	QChartView* chartView = new QChartView(chart);
+	chartView->setRenderHint(QPainter::Antialiasing);
+
 	chartView->setGeometry(histogramGeometry);
-	chartView->resize(235, 235);
+	chartView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
+	// 设置图表的背景透明
+	chartView->setAutoFillBackground(true);
 
-	histogramView->setScene(scene);
+	ui.histogram->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	ui.histogram->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	// 调整场景的大小以匹配histogramView的几何形状
+	scene->setSceneRect(histogramGeometry);
+	
 	scene->addWidget(chartView); // 将 chartView 添加到场景中
+
+	ui.histogram->setScene(scene);
 }
 
 /***************************************

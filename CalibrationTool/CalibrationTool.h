@@ -21,7 +21,7 @@ class CalibrationTool : public QMainWindow
     Q_OBJECT
 
 public:
-    CalibrationTool(QWidget *parent = nullptr);
+    CalibrationTool(QWidget* parent = nullptr);
     ~CalibrationTool();
 
 private:
