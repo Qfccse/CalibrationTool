@@ -418,6 +418,11 @@ void CalibrationTool::createBarChart() {
 	meanLine->attachAxis(axisX);
 	meanLine->attachAxis(axisY);
 
+	// 连接点击事件，点击条形触发
+	QObject::connect(projectionError, &QBarSet::clicked, [](int index) {
+		qDebug() << "Bar clicked:" << index;
+		});
+
 
 	// 展示图表
 	QGraphicsView* histogramView = ui.histogram; // histogram 是之前在 UI 文件中定义的 QGraphicsView 组件
