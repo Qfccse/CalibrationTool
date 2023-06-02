@@ -49,7 +49,6 @@ private:
     void createProgressBar(bool isBatch);
     void createBarChart(); // 画条形图
     void createPatternCentric();
-    QLabel* m_tooltip = nullptr; // 条形图指针
 private:
     void selectFile();
     //弹出选择文件对话框
