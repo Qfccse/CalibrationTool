@@ -15,9 +15,12 @@ using namespace std;
 #define IMAGE_LIST_WIDTH 150
 #define IMAGE_WIN_HEIGHT 480
 #define IMAGE_WIN_WIDTH 640
+#define GRAPHIC_VIEW_WIDTH 256
+#define GRAPHIC_VIEW_HEIGHT 240
 #define SAMPLE_RATE 30
 #define IMAGE_PADDING 9
-
+#define CHART_EXPEND 55
+#define CHART_FONT_SIZE 8
 
 #define NORMAL_CAM 1
 #define FISH_EYE_CAM 2

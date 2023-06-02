@@ -13,6 +13,7 @@
 #include <QMessageBox>
 #include <QHBoxLayout>
 #include <QProgressDialog>
+#include <QAction>
 #include <QDateTime>
 #include "Const.h"
 
@@ -21,7 +22,7 @@ class CalibrationTool : public QMainWindow
     Q_OBJECT
 
 public:
-    CalibrationTool(QWidget *parent = nullptr);
+    CalibrationTool(QWidget* parent = nullptr);
     ~CalibrationTool();
 
 private:
@@ -41,27 +42,52 @@ public slots:
     void startCalibrate();
     void handleListItemClick(QListWidgetItem* item); // 给上传的图片添加点击事件
     void updateProgress(int value); //相机标定的进度条更新函数
+    void clickToUndistort();
+    void clickToShow(int index);
+
+    /*处理鼠标右键事件，弹出菜单*/
+    void onCustomContextMenuRequested(const QPoint & pos);
+    /*处理弹出菜单上的Delete事件*/
+    void onActionDelete();
+    void onActionClear();
+    void onActionRemoveAndReCalibrate();
+
 signals:
     void progressUpdate(int value); // 相机标定的进度条的进度序号
 private:
     void initImageList();
     void createProgressBar(bool isBatch);
+    void createLoading();
     void createBarChart(); // 画条形图
     void createPatternCentric();
+    void createPatternCentric2();
 private:
-    void selectFile();
     //弹出选择文件对话框
-    void showImageList();
+    void selectFile();
     //用缩略图显示图片
+    void showImageList();
+    //标定函数
+    void calcSizeAndCalib();
 private:
     QAction* fileOpenAction = nullptr; //创建一个QAction指针， 打开文件动作
     QMenu* menu = nullptr;  //创建一个QMenu指针
     QProgressDialog* progressBar = nullptr; // 进度条
+
+    QLabel* m_tooltip = nullptr; // 条形图指针
+
+    QMenu* popMenu_In_ListWidget_ = nullptr;/*弹出菜单*/
+    QAction* action_Delete_In_ListWidget_ = nullptr;/*菜单上的Action*/
+    QAction* action_Clear_In_ListWidget_ = nullptr;/*菜单上的Action*/
+    QAction* action_Delete_And_ReCalibrate_In_ListWidget_ = nullptr;
+
 private:
+    int maxNameIndex = 0;
+    bool showUndistored = false;
     QStringList fileNames;
     // FullCalibrateResults fullCalibResults;
     CalibrateResults calibResults;
     vector<vector<cv::Point2f>> imageCorners;
-    std::unordered_map<int, QString> imageNameMap;
-    std::unordered_map<int, cv::Mat> camImageMap;
+    vector<QString> imageNameList;
+    vector<cv::Mat> imageMatList;
+    vector<cv::Mat> undistortedImageList;
 };
