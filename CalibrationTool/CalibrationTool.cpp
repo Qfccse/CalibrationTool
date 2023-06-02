@@ -439,20 +439,59 @@ void CalibrationTool::createBarChart() {
 *****************************************/
 void CalibrationTool::createPatternCentric() {
 
-	//// 每张图片的外参
-	//vector<cv::Mat> R;
-	//vector<cv::Mat> t;
-	//// 畸变系数
-	//double D_[] = { -3.4351280917484162e-01, 1.5909766895881644e-01, -1.2375087184036587e-06, 7.4996411884060586e-04, -4.1226886540150574e-02 };
-	//cv::Mat D = cv::Mat(1, 5, CV_64F, D_); // 创建一个空的 double 类型矩阵
+	//相机内参矩阵
+	double K_[] = { 3.5983738063815252e+02, 0.,                     3.2081490341205819e+02,
+					0.,                     3.5921595702572262e+02, 2.4923035115866105e+02,
+					0.,                     0.,                     1. };
+	cv::Mat K = cv::Mat(3, 3, CV_64F, K_);
+	// 每张图片的外参
+	double rvec_[] = { 3.7491680797714594e-01, -3.2372075658594135e-01, 2.5993111958600417e+00 };
+	vector<cv::Mat> rvec;
+	rvec.push_back(cv::Mat(3, 1, CV_64F, rvec_));
 
-	//// 定义旋转矩阵 R 和三维向量 v
-	//cv::Mat R_ = (cv::Mat_<double>(3, 3) << 1, 0, 0, 0, 1, 0, 0, 0, 1); // 示例旋转矩阵
-	//cv::Mat v_ = (cv::Mat_<double>(3, 1) << 1, 2, 3); // 示例三维向量
+	double t_[] = { 3.6403325320085722e-01, 1.7996703463978486e-01, 9.1656656593901542e-01 };
+	vector<cv::Mat> t;
+	t.push_back(cv::Mat(3, 1, CV_64F, t_));
+	//for (int row = 0; row < t[0].rows; ++row)
+	//{
+	//	for (int col = 0; col < t[0].cols; ++col)
+	//	{
+	//		qDebug() << t[0].at<double>(row, col);
+	//	}
+	//}
+	// 畸变系数
+	double D_[] = { -3.4351280917484162e-01, 1.5909766895881644e-01, -1.2375087184036587e-06, 7.4996411884060586e-04, -4.1226886540150574e-02 };
+	cv::Mat D = cv::Mat(1, 5, CV_64F, D_); // 创建一个空的 double 类型矩阵
 
-	//// 计算三维坐标
-	//cv::Mat result = R_ * v_;
 
+	// 从旋转向量转成旋转矩阵
+	cv::Mat R;
+	cv::Rodrigues(rvec[0], R);
+	//for (int row = 0; row < R.rows; ++row)
+	//{
+	//	for (int col = 0; col < R.cols; ++col)
+	//	{
+	//		qDebug() << R.at<double>(row, col);
+	//	}
+	//	qDebug() << "";
+	//}
+
+	// 计算相机坐标系原点的在世界坐标系的三维坐标
+	// 相机坐标系中的原点 Pc (0, 0, 0) 和世界坐标系中的点 Pw 之间的转换关系：Pc = [R t] * Pw，
+	// 可以得到 Pw = [R t]_inv * Pc。
+
+	cv::Mat T = cv::Mat(cv::Matx34d(R.at<double>(0, 0), R.at<double>(0, 1), R.at<double>(0, 2), t[0].at<double>(0,0),
+									R.at<double>(1, 0), R.at<double>(1, 1), R.at<double>(1, 2), t[0].at<double>(1,0),
+									R.at<double>(2, 0), R.at<double>(2, 1), R.at<double>(2, 2), t[0].at<double>(2,0)));
+
+	for (int row = 0; row < T.rows; ++row)
+	{
+		for (int col = 0; col < T.cols; ++col)
+		{
+			qDebug() << T.at<double>(row, col);
+		}
+		qDebug() << "";
+	}
 
 	// 展示图表
 	QGraphicsView* transformView = ui.transformGram; // histogram 是之前在 UI 文件中定义的 QGraphicsView 组件
@@ -593,4 +632,8 @@ void CalibrationTool::createPatternCentric() {
 	widget->resize(500, 500);
 
 	//scene->addWidget(widget);
+}
+
+
+void CalibrationTool::calculatePosition() {
 }

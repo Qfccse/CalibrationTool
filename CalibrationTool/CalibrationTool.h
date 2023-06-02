@@ -48,6 +48,7 @@ private:
     void createProgressBar(bool isBatch);
     void createBarChart(); // 画条形图
     void createPatternCentric();
+    void calculatePosition(); // 算坐标和旋转
 private:
     void selectFile();
     //弹出选择文件对话框
