@@ -42,6 +42,7 @@ public slots:
     void startCalibrate();
     void handleListItemClick(QListWidgetItem* item); // 给上传的图片添加点击事件
     void updateProgress(int value); //相机标定的进度条更新函数
+    void clickToUndistort();
     void clickToShow(int index);
 
     /*处理鼠标右键事件，弹出菜单*/
@@ -56,8 +57,10 @@ signals:
 private:
     void initImageList();
     void createProgressBar(bool isBatch);
+    void createLoading();
     void createBarChart(); // 画条形图
     void createPatternCentric();
+    void createPatternCentric2();
 private:
     //弹出选择文件对话框
     void selectFile();
@@ -69,6 +72,7 @@ private:
     QAction* fileOpenAction = nullptr; //创建一个QAction指针， 打开文件动作
     QMenu* menu = nullptr;  //创建一个QMenu指针
     QProgressDialog* progressBar = nullptr; // 进度条
+
     QLabel* m_tooltip = nullptr; // 条形图指针
 
     QMenu* popMenu_In_ListWidget_ = nullptr;/*弹出菜单*/

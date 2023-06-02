@@ -36,6 +36,9 @@ CalibrationTool::CalibrationTool(QWidget* parent)
     connect(ui.imageList, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(onCustomContextMenuRequested(const QPoint&)));
 
     createBarChart();
+    //createPatternCentric();
+    createPatternCentric2();
+    //createLoading();
 }
 
 CalibrationTool::~CalibrationTool()
@@ -83,6 +86,7 @@ void CalibrationTool::onActionClear() {
         this->imageCorners.clear();
         this->imageNameList.clear();
         this->imageMatList.clear();
+        this->undistortedImageList.clear();
         this->maxNameIndex = 0;
         this->calibResults = CalibrateResults();
         QGraphicsScene* scene = new QGraphicsScene;
@@ -121,6 +125,8 @@ void CalibrationTool::onActionRemoveAndReCalibrate() {
             this->imageCorners.erase(this->imageCorners.begin() + index);
             this->imageNameList.erase(this->imageNameList.begin() + index);
             this->imageMatList.erase(this->imageMatList.begin() + index);
+            //this->undistortedImageList.erase(this->undistortedImageList.begin() + index);
+            this->undistortedImageList.clear();
 
             this->calcSizeAndCalib();
         }
@@ -288,6 +294,7 @@ void CalibrationTool::startCalibrate() {
         }
     }
     this->calcSizeAndCalib();
+    this->clickToUndistort();
 
     // 先取消原本的绑定，然后再绑定新的
     if (!popMenu_In_ListWidget_->actions().contains(action_Delete_And_ReCalibrate_In_ListWidget_))
@@ -310,6 +317,38 @@ void CalibrationTool::updateProgress(int value)
     this->progressBar->setValue(value);
 }
 
+
+void CalibrationTool::createLoading() {
+    QMovie* m_pLoadingMovie = new QMovie("D:\\workspace\\cv\\CalibrationTool\\CalibrationTool\\CalibrationTool\\picture\\loading.gif");
+    m_pLoadingMovie->setScaledSize(QSize(120, 120));
+    QFrame* m_pCenterFrame = new QFrame(this);
+    m_pCenterFrame->setGeometry(200, 200, 230, 230);
+    QLabel* m_pMovieLabel = new QLabel(m_pCenterFrame);
+    m_pMovieLabel->setGeometry(55, 10, 120, 120);
+    m_pMovieLabel->setScaledContents(true);
+    m_pMovieLabel->setMovie(m_pLoadingMovie);
+    m_pLoadingMovie->start();
+
+
+    //提示文本
+    QLabel* m_pTipsLabel = new QLabel(m_pCenterFrame);
+    m_pTipsLabel->setGeometry(5, 130, 220, 50);
+    m_pTipsLabel->setAlignment(Qt::AlignCenter | Qt::AlignHCenter);
+    m_pTipsLabel->setObjectName("tips");
+    m_pTipsLabel->setText("Calibrating...");
+    m_pTipsLabel->setStyleSheet("QLabel#tips{font-family:\"Microsoft YaHei\";font-size: 15px;color: #333333;}");
+
+    QMessageBox messageBox;
+    messageBox.setWindowTitle("Loading");
+    messageBox.setText("Please wait...");
+
+    // 将 QLabel 添加到弹窗中
+    messageBox.layout()->addWidget(m_pMovieLabel);
+
+    // 显示弹窗
+    messageBox.show();
+    //m_pMovieLabel->show();
+}
 
 void CalibrationTool::fileOpenActionSlot()
 {
@@ -453,18 +492,18 @@ void CalibrationTool::clickToShow(int index) {
     vector<cv::Point2f> corners = this->imageCorners[index];
     QString fileName = this->imageNameList[index];
     cv::Mat flipedFrame;
-    //if (!fileName.isEmpty()) {
-    //    flipedFrame = cv::imread(fileName.toStdString());
-        // 将颜色格式从BGR转换为RGB
-    //    cvtColor(flipedFrame, flipedFrame, cv::COLOR_BGR2RGB);
-    //}
-    //else
-    //{
-       // flipedFrame = this->camImageMap[index];
+  
+    this->showUndistored = true;
+    // 获取点击的图片
+    if (!this->showUndistored) {
         flipedFrame = this->imageMatList[index];
-    //}
-    cv::drawChessboardCorners(flipedFrame, cv::Size(9, 6), corners, !corners.empty());
-
+        cv::drawChessboardCorners(flipedFrame, cv::Size(9, 6), corners, !corners.empty());
+    }
+    else
+    {
+        flipedFrame = this->undistortedImageList[index];
+    }
+    
     // 将抓取到的帧，转换为QImage格式。QImage::Format_RGB888不同的摄像头用不同的格式。
     QImage image(flipedFrame.data, flipedFrame.cols, flipedFrame.rows, flipedFrame.step, QImage::Format_RGB888);
     //创建显示容器
@@ -477,6 +516,13 @@ void CalibrationTool::clickToShow(int index) {
     ui.imageWindow->show();
 }
 
+void CalibrationTool::clickToUndistort() {
+    for (int i = 0; i < imageMatList.size(); i++) {
+        cv::Mat undistortedImg;
+        cv::undistort(imageMatList[i], undistortedImg, this->calibResults.cameraMatrix, this->calibResults.distCoeffs);
+        undistortedImageList.push_back(undistortedImg);
+    }
+}
 /***************************************
 *** Qt中使用QCharts画条形图BarChart ***
 *****************************************/
@@ -663,11 +709,11 @@ void CalibrationTool::createPatternCentric() {
 
 
     // 展示图表
-    QGraphicsView* transformView = ui.transformGram; // histogram 是之前在 UI 文件中定义的 QGraphicsView 组件
-    QGraphicsScene* scene = new QGraphicsScene(transformView); // 创建一个场景对象，关联到 histogramView 组件
+   QGraphicsView* transformView = ui.transformGram; // histogram 是之前在 UI 文件中定义的 QGraphicsView 组件
+   QGraphicsScene* scene = new QGraphicsScene(transformView); // 创建一个场景对象，关联到 histogramView 组件
 
     // Root entity
-    Qt3DCore::QEntity* rootEntity = new Qt3DCore::QEntity();
+   
     // 3D Window
     Qt3DExtras::Qt3DWindow* view = new Qt3DExtras::Qt3DWindow();
     view->defaultFrameGraph()->setClearColor(QColor(QRgb(0xffffffff)));
@@ -675,6 +721,7 @@ void CalibrationTool::createPatternCentric() {
     QSize screenSize = view->screen()->size();
     container->setMinimumSize(QSize(200, 100));
     container->setMaximumSize(screenSize);
+    Qt3DCore::QEntity* rootEntity = new Qt3DCore::QEntity();
     view->setRootEntity(rootEntity);
 
     QWidget* widget = new QWidget;
@@ -800,5 +847,51 @@ void CalibrationTool::createPatternCentric() {
     widget->show();
     widget->resize(500, 500);
 
-    //scene->addWidget(widget);
+    scene->addWidget(widget);
+}
+
+void CalibrationTool::createPatternCentric2() {
+    // 创建子窗口并设置大小
+    QWidget* childWidget = new QWidget(this);
+    childWidget->setFixedSize(250, 250);
+
+    // 创建 Qt3D 窗口,这是设置大小的，不要改
+    Qt3DExtras::Qt3DWindow* view3D = new Qt3DExtras::Qt3DWindow();
+    view3D->defaultFrameGraph()->setClearColor(Qt::white);
+    QWidget* container = QWidget::createWindowContainer(view3D, childWidget);
+    container->setGeometry(0, 0, GRAPHIC_VIEW_WIDTH- 2, GRAPHIC_VIEW_HEIGHT - 6);
+
+    // 创建 3D 实体
+    Qt3DCore::QEntity* rootEntity = new Qt3DCore::QEntity();
+
+    // 创建 3D 球体
+    Qt3DExtras::QSphereMesh* sphereMesh = new Qt3DExtras::QSphereMesh();
+    sphereMesh->setRadius(1.0);
+
+    // 创建 3D 材质
+    Qt3DExtras::QDiffuseSpecularMaterial* material = new Qt3DExtras::QDiffuseSpecularMaterial();
+    material->setDiffuse(QColor(255, 0, 0)); // 设置球体的漫反射颜色为红色
+
+    // 创建 3D 实体组件
+    Qt3DCore::QEntity* sphereEntity = new Qt3DCore::QEntity(rootEntity);
+    sphereEntity->addComponent(sphereMesh);
+    sphereEntity->addComponent(material);
+
+    // 创建 3D 相机
+    Qt3DRender::QCamera* camera = view3D->camera();
+    camera->lens()->setPerspectiveProjection(45.0f, 1.0f, 0.1f, 100.0f);
+    camera->setPosition(QVector3D(0, 0, 5));
+    camera->setViewCenter(QVector3D(0, 0, 0));
+
+    // 创建 3D 相机控制器
+    Qt3DExtras::QOrbitCameraController* cameraController = new Qt3DExtras::QOrbitCameraController(rootEntity);
+    cameraController->setCamera(camera);
+
+    // 设置根实体
+    view3D->setRootEntity(rootEntity);
+
+    // 让子窗口固定在右下角，最好不要改动
+    QGridLayout* gridLayout = new QGridLayout(ui.centralWidget);
+    gridLayout->setContentsMargins(0, 0, 40, 50);
+    gridLayout->addWidget(childWidget, 0, 0, Qt::AlignBottom | Qt::AlignRight);
 }
