@@ -66,8 +66,6 @@ private:
     //标定函数
     void calcSizeAndCalib();
 private:
-    int maxMapIndex = 0;
-    int maxNameIndex = 0;
     QAction* fileOpenAction = nullptr; //创建一个QAction指针， 打开文件动作
     QMenu* menu = nullptr;  //创建一个QMenu指针
     QProgressDialog* progressBar = nullptr; // 进度条
@@ -79,10 +77,13 @@ private:
     QAction* action_Delete_And_ReCalibrate_In_ListWidget_ = nullptr;
 
 private:
+    int maxNameIndex = 0;
+    bool showUndistored = false;
     QStringList fileNames;
     // FullCalibrateResults fullCalibResults;
     CalibrateResults calibResults;
     vector<vector<cv::Point2f>> imageCorners;
     vector<QString> imageNameList;
     vector<cv::Mat> imageMatList;
+    vector<cv::Mat> undistortedImageList;
 };

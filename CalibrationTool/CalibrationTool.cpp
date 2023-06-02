@@ -377,8 +377,10 @@ void CalibrationTool::selectFile() {
         for (int i = 0; i < fileNames.length(); i++) {
             fileNames[i] = QDir::toNativeSeparators(fileNames[i]);
             this->imageNameList.push_back(fileNames[i]);
-            cv::Mat emptyMat;
-            this->imageMatList.push_back(emptyMat);
+            cv::Mat flipedFrame = cv::imread(fileNames[i].toStdString());
+            // 将颜色格式从BGR转换为RGB
+            cvtColor(flipedFrame, flipedFrame, cv::COLOR_BGR2RGB);
+            this->imageMatList.push_back(flipedFrame);
             // 在上传图片的时候检测角点
             // this->imageCorners.push_back(findOneCorners(fileNames[i], BOARD_SIZE));
             // this->progressBar->setValue((i+1)*100/ fileNames.length());
@@ -451,16 +453,16 @@ void CalibrationTool::clickToShow(int index) {
     vector<cv::Point2f> corners = this->imageCorners[index];
     QString fileName = this->imageNameList[index];
     cv::Mat flipedFrame;
-    if (!fileName.isEmpty()) {
-        flipedFrame = cv::imread(fileName.toStdString());
+    //if (!fileName.isEmpty()) {
+    //    flipedFrame = cv::imread(fileName.toStdString());
         // 将颜色格式从BGR转换为RGB
-        cvtColor(flipedFrame, flipedFrame, cv::COLOR_BGR2RGB);
-    }
-    else
-    {
+    //    cvtColor(flipedFrame, flipedFrame, cv::COLOR_BGR2RGB);
+    //}
+    //else
+    //{
        // flipedFrame = this->camImageMap[index];
         flipedFrame = this->imageMatList[index];
-    }
+    //}
     cv::drawChessboardCorners(flipedFrame, cv::Size(9, 6), corners, !corners.empty());
 
     // 将抓取到的帧，转换为QImage格式。QImage::Format_RGB888不同的摄像头用不同的格式。
