@@ -357,6 +357,7 @@ void CalibrationTool::handleListItemClick(QListWidgetItem* item)
 *** Qt中使用QCharts画条形图BarChart ***
 *****************************************/
 
+
 void CalibrationTool::createBarChart() {
 	// 条形图数据
 	QBarSet* projectionError = new QBarSet("Projection Error");
@@ -378,17 +379,12 @@ void CalibrationTool::createBarChart() {
 	mean /= projectionError_.size();
 	// 创建QBarSeries
 	QBarSeries* series = new QBarSeries();
-	// 创建一个自定义的悬停处理函数
-	QObject::connect(series, &QBarSeries::hovered, this, [](bool status, int index, QBarSet* barSet) {
-		if (status) {
-			qDebug() << "Hovered on bar:" << barSet->label() << "at index:" << index;
-			// 执行悬停事件的处理逻辑
-		}
-		else {
-			qDebug() << "No longer hovering on bar:" << barSet->label() << "at index:" << index;
-			// 执行取消悬停事件的处理逻辑
-		}
-		});
+
+	//series->setLabelsPosition(QAbstractBarSeries::LabelsOutsideEnd);
+	//series->setLabelsVisible(true);
+	//barOK->setLabelColor(Qt::black);
+	//barNG->setLabelColor(Qt::black);
+	//barNAN->setLabelColor(Qt::black);
 
 	// 创建一个自定义的点击处理函数
 	QObject::connect(series, &QBarSeries::clicked, this, [](int index, QBarSet* barSet) {
@@ -481,6 +477,35 @@ void CalibrationTool::createBarChart() {
 	scene->addWidget(chartView); // 将 chartView 添加到场景中
 
 	ui.histogram->setScene(scene);
+
+	// 创建一个自定义的悬停处理函数
+	QObject::connect(series, &QBarSeries::hovered, this, [this, series, chart, chartView](bool status, int index, QBarSet* barset) {
+			//鼠标指向图表柱时提示数值文本
+			QChart* pchart = chart;
+			if (this->m_tooltip == nullptr)
+			{
+				m_tooltip = new  QLabel(chartView);    //头文件中的定义 QLabel*   m_tooltip = nullptr;  //柱状体鼠标提示信息
+				m_tooltip->setStyleSheet("background: rgba(95,166,250,185);color: rgb(248, 248, 255);"
+					"border:0px groove gray;border-radius:10px;padding:2px 4px;"
+					"border:2px groove gray;border-radius:10px;padding:2px 4px");
+				m_tooltip->setVisible(false);
+			}
+			if (status)
+			{
+				double val = barset->at(index);
+				QPointF point(index, barset->at(index));
+				QPointF pointLabel = pchart->mapToPosition(point);
+				QString sText = QString("%1").arg(val);
+
+				m_tooltip->setText(sText);
+				m_tooltip->move(pointLabel.x() - 50, pointLabel.y() - m_tooltip->height() * 1.5);
+				m_tooltip->show();
+			}
+			else
+			{
+				m_tooltip->hide();
+			}
+		});
 }
 
 /***************************************
