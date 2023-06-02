@@ -51,6 +51,12 @@
       <height>490</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <family>Arial</family>
+      <pointsize>8</pointsize>
+     </font>
+    </property>
    </widget>
    <widget class="QGraphicsView" name="histogram">
     <property name="geometry">
@@ -60,6 +66,11 @@
       <width>256</width>
       <height>240</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QgrapicsView#histogram{
+overflow: hidden;
+}</string>
     </property>
    </widget>
    <widget class="QGraphicsView" name="transformGram">
@@ -125,7 +136,7 @@
        </property>
        <property name="iconSize">
         <size>
-         <width>60</width>
+         <width>55</width>
          <height>60</height>
         </size>
        </property>
@@ -172,6 +183,55 @@
          <height>60</height>
         </size>
        </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QWidget" name="widget" native="true">
+       <widget class="QPushButton" name="showUndistorted">
+        <property name="geometry">
+         <rect>
+          <x>8</x>
+          <y>10</y>
+          <width>120</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Show Undistorted</string>
+        </property>
+       </widget>
+       <widget class="QDoubleSpinBox" name="fishEyeScale">
+        <property name="geometry">
+         <rect>
+          <x>87</x>
+          <y>50</y>
+          <width>40</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="decimals">
+         <number>1</number>
+        </property>
+       </widget>
+       <widget class="QLabel" name="fishEyeScaleLabel">
+        <property name="geometry">
+         <rect>
+          <x>8</x>
+          <y>50</y>
+          <width>75</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Fisheye Scale</string>
+        </property>
+       </widget>
       </widget>
      </item>
      <item>
@@ -236,6 +296,9 @@
          <widget class="QRadioButton" name="standardMode">
           <property name="text">
            <string>Standard</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>

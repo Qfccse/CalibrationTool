@@ -13,6 +13,7 @@
 #include <QMessageBox>
 #include <QHBoxLayout>
 #include <QProgressDialog>
+#include <QAction>
 #include <QDateTime>
 #include "Const.h"
 
@@ -21,48 +22,73 @@ class CalibrationTool : public QMainWindow
     Q_OBJECT
 
 public:
-    CalibrationTool(QWidget *parent = nullptr);
+    CalibrationTool(QWidget* parent = nullptr);
     ~CalibrationTool();
 
 private:
     Ui::CalibrationToolClass ui;
     QTimer* timer;
     QImage imag;
-    cv::VideoCapture cam;// ÊÓÆµ»ñÈ¡½á¹¹£¬ ÓÃÀ´×÷ÎªÊÓÆµ»ñÈ¡º¯ÊýµÄÒ»¸ö²ÎÊý
-    cv::Mat frame;//ÉêÇëIplImageÀàÐÍÖ¸Õë£¬¾ÍÊÇÉêÇëÄÚ´æ¿Õ¼äÀ´´æ·ÅÃ¿Ò»Ö¡Í¼Ïñ
+    cv::VideoCapture cam;// ï¿½ï¿½Æµï¿½ï¿½È¡ï¿½á¹¹ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Æµï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    cv::Mat frame;//ï¿½ï¿½ï¿½ï¿½IplImageï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ë£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½Õ¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿Ò»Ö¡Í¼ï¿½ï¿½
 
 public slots:
-    //²Ûº¯Êý
-    void openCamara();      // ´ò¿ªÉãÏñÍ·
-    void readFarme();       // ¶ÁÈ¡µ±Ç°Ö¡ÐÅÏ¢
-    void closeCamara();     // ¹Ø±ÕÉãÏñÍ·¡£
-    void takingPictures();  // ÅÄÕÕ
-    void fileOpenActionSlot();//´ò¿ªÎÄ ¼þ¶¯×÷¶ÔÓ¦µÄ²Ûº¯Êý
+    //ï¿½Ûºï¿½ï¿½ï¿½
+    void openCamara();      // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í·
+    void readFarme();       // ï¿½ï¿½È¡ï¿½ï¿½Ç°Ö¡ï¿½ï¿½Ï¢
+    void closeCamara();     // ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½Í·ï¿½ï¿½
+    void takingPictures();  // ï¿½ï¿½ï¿½ï¿½
+    void fileOpenActionSlot();//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ä²Ûºï¿½ï¿½ï¿½
     void startCalibrate();
-    void handleListItemClick(QListWidgetItem* item); // ¸øÉÏ´«µÄÍ¼Æ¬Ìí¼Óµã»÷ÊÂ¼þ
-    void updateProgress(int value); //Ïà»ú±ê¶¨µÄ½ø¶ÈÌõ¸üÐÂº¯Êý
+    void handleListItemClick(QListWidgetItem* item); // ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½Í¼Æ¬ï¿½ï¿½ï¿½Óµï¿½ï¿½ï¿½Â¼ï¿½
+    void updateProgress(int value); //ï¿½ï¿½ï¿½ï¿½ê¶¨ï¿½Ä½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Âºï¿½ï¿½ï¿½
+    void clickToUndistort();
+    void clickToShow(int index);
+
+    /*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¼ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½*/
+    void onCustomContextMenuRequested(const QPoint & pos);
+    /*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½Ïµï¿½Deleteï¿½Â¼ï¿½*/
+    void onActionDelete();
+    void onActionClear();
+    void onActionRemoveAndReCalibrate();
+
 signals:
-    void progressUpdate(int value); // Ïà»ú±ê¶¨µÄ½ø¶ÈÌõµÄ½ø¶ÈÐòºÅ
+    void progressUpdate(int value); // ï¿½ï¿½ï¿½ï¿½ê¶¨ï¿½Ä½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 private:
     void initImageList();
     void createProgressBar(bool isBatch);
-    void createBarChart(); // »­ÌõÐÎÍ¼
+    void createLoading();
+    void createBarChart(); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼
     void createPatternCentric();
-    void calculatePosition(); // Ëã×ø±êºÍÐý×ª
+    void calculatePosition(); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ª
+    void createPatternCentric2();
 private:
+    //ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ô»ï¿½ï¿½ï¿½
     void selectFile();
-    //µ¯³öÑ¡ÔñÎÄ¼þ¶Ô»°¿ò
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½Ê¾Í¼Æ¬
     void showImageList();
-    //ÓÃËõÂÔÍ¼ÏÔÊ¾Í¼Æ¬
+    //ï¿½ê¶¨ï¿½ï¿½ï¿½ï¿½
+    void calcSizeAndCalib();
 private:
-    QAction* fileOpenAction = nullptr; //´´½¨Ò»¸öQActionÖ¸Õë£¬ ´ò¿ªÎÄ¼þ¶¯×÷
-    QMenu* menu = nullptr;  //´´½¨Ò»¸öQMenuÖ¸Õë
-    QProgressDialog* progressBar = nullptr; // ½ø¶ÈÌõ
+    QAction* fileOpenAction = nullptr; //ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½QActionÖ¸ï¿½ë£¬ ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½
+    QMenu* menu = nullptr;  //ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½QMenuÖ¸ï¿½ï¿½
+    QProgressDialog* progressBar = nullptr; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+
+    QLabel* m_tooltip = nullptr; // ï¿½ï¿½ï¿½ï¿½Í¼Ö¸ï¿½ï¿½
+
+    QMenu* popMenu_In_ListWidget_ = nullptr;/*ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½*/
+    QAction* action_Delete_In_ListWidget_ = nullptr;/*ï¿½Ëµï¿½ï¿½Ïµï¿½Action*/
+    QAction* action_Clear_In_ListWidget_ = nullptr;/*ï¿½Ëµï¿½ï¿½Ïµï¿½Action*/
+    QAction* action_Delete_And_ReCalibrate_In_ListWidget_ = nullptr;
+
 private:
+    int maxNameIndex = 0;
+    bool showUndistored = false;
     QStringList fileNames;
     // FullCalibrateResults fullCalibResults;
     CalibrateResults calibResults;
     vector<vector<cv::Point2f>> imageCorners;
-    std::unordered_map<int, QString> imageNameMap;
-    std::unordered_map<int, cv::Mat> camImageMap;
+    vector<QString> imageNameList;
+    vector<cv::Mat> imageMatList;
+    vector<cv::Mat> undistortedImageList;
 };
