@@ -13,6 +13,7 @@
 #include <QMessageBox>
 #include <QHBoxLayout>
 #include <QProgressDialog>
+#include <QAction>
 #include <QDateTime>
 #include "Const.h"
 
@@ -42,6 +43,13 @@ public slots:
     void handleListItemClick(QListWidgetItem* item); // 给上传的图片添加点击事件
     void updateProgress(int value); //相机标定的进度条更新函数
     void clickToShow(int index);
+
+    /*处理鼠标右键事件，弹出菜单*/
+    void onCustomContextMenuRequested(const QPoint & pos);
+    /*处理弹出菜单上的Delete事件*/
+    void onActionDelete();
+    void onActionClear();
+
 signals:
     void progressUpdate(int value); // 相机标定的进度条的进度序号
 private:
@@ -55,10 +63,14 @@ private:
     void showImageList();
     //用缩略图显示图片
 private:
+    int maxIndex = 0;
     QAction* fileOpenAction = nullptr; //创建一个QAction指针， 打开文件动作
     QMenu* menu = nullptr;  //创建一个QMenu指针
     QProgressDialog* progressBar = nullptr; // 进度条
     QLabel* m_tooltip = nullptr; // 条形图指针
+    QMenu* popMenu_In_ListWidget_ = nullptr;/*弹出菜单*/
+    QAction* action_Delete_In_ListWidget_ = nullptr;/*菜单上的Action*/
+    QAction* action_Clear_In_ListWidget_ = nullptr;/*菜单上的Action*/
 private:
     QStringList fileNames;
     // FullCalibrateResults fullCalibResults;
