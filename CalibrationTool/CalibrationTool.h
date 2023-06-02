@@ -58,6 +58,7 @@ private:
     QAction* fileOpenAction = nullptr; //创建一个QAction指针， 打开文件动作
     QMenu* menu = nullptr;  //创建一个QMenu指针
     QProgressDialog* progressBar = nullptr; // 进度条
+    QLabel* m_tooltip = nullptr; // 条形图指针
 private:
     QStringList fileNames;
     // FullCalibrateResults fullCalibResults;
