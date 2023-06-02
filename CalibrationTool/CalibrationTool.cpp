@@ -28,7 +28,6 @@ CalibrationTool::CalibrationTool(QWidget* parent)
 	// connect(ui.imageList);
 	connect(ui.imageList, &QListWidget::itemClicked, this, &CalibrationTool::handleListItemClick);
 	createBarChart();
-	// createPatternCentric();
 }
 
 CalibrationTool::~CalibrationTool()
@@ -324,6 +323,10 @@ void CalibrationTool::handleListItemClick(QListWidgetItem* item)
 	//int index = item->text().toInt();
 	int index = ui.imageList->row(item);
 
+	this -> clickToShow(index);
+	
+}
+void CalibrationTool::clickToShow(int index){
 	qDebug() << "Clicked item text: " << index << "\n";
 	qDebug() << this->imageCorners.size() << "\n";
 	vector<cv::Point2f> corners = this->imageCorners[index];
@@ -352,7 +355,6 @@ void CalibrationTool::handleListItemClick(QListWidgetItem* item)
 	ui.imageWindow->show();
 }
 
-
 /***************************************
 *** Qt中使用QCharts画条形图BarChart ***
 *****************************************/
@@ -360,13 +362,15 @@ void CalibrationTool::handleListItemClick(QListWidgetItem* item)
 void CalibrationTool::createBarChart() {
 	// 条形图数据
 	QBarSet* projectionError = new QBarSet("Projection Error");
-	// vector<double> projectionError_ = calibResults.reprojectionError;
-	vector<double> projectionError_ = { 3.0032143514447018e-01, 2.5005490108190759e-01, 2.2378858466658030e-01,
+	/*vector<double> projectionError_ = {
+				   3.0032143514447018e-01, 2.5005490108190759e-01, 2.2378858466658030e-01,
 				   1.6412628748340338e-01, 1.9050650570901181e-01, 1.8053703768600146e-01,
-				   2.1210603721570268e-01, 2.4443632141393190e-01, 3.0032143514447018e-01, 2.5005490108190759e-01, 2.2378858466658030e-01,
+				   2.1210603721570268e-01, 2.4443632141393190e-01, 3.0032143514447018e-01, 
+				   2.5005490108190759e-01, 2.2378858466658030e-01, 3.0032143514447018e-01,
 				   1.6412628748340338e-01, 1.9050650570901181e-01, 1.8053703768600146e-01,
-				   2.1210603721570268e-01, 2.4443632141393190e-01, 2.6233146806962876e-01 };
+				   2.1210603721570268e-01, 2.4443632141393190e-01, 2.6233146806962876e-01 };*/
 
+	vector<double> projectionError_ = calibResults.reprojectionError;
 	// 画均值线
 	// 计算数据的均值
 	double mean = 0;
@@ -381,18 +385,28 @@ void CalibrationTool::createBarChart() {
 	// 创建一个自定义的悬停处理函数
 	QObject::connect(series, &QBarSeries::hovered, this, [](bool status, int index, QBarSet* barSet) {
 		if (status) {
-			qDebug() << "Hovered on bar:" << barSet->label() << "at index:" << index;
+			// qDebug() << "Hovered on bar:" << barSet->label() << "at index:" << index;
 			// 执行悬停事件的处理逻辑
 		}
 		else {
-			qDebug() << "No longer hovering on bar:" << barSet->label() << "at index:" << index;
+			// qDebug() << "No longer hovering on bar:" << barSet->label() << "at index:" << index;
 			// 执行取消悬停事件的处理逻辑
 		}
 		});
 
 	// 创建一个自定义的点击处理函数
-	QObject::connect(series, &QBarSeries::clicked, this, [](int index, QBarSet* barSet) {
+	QObject::connect(series, &QBarSeries::clicked, this, [this](int index, QBarSet* barSet) {
+		int realIndex = 0;
 		qDebug() << "Clicked on bar:" << barSet->label() << "at index:" << index;
+		for (int i = 0; i < this->imageCorners.size();i++) {
+			if (!imageCorners[i].empty()) {
+				realIndex++;
+			}
+			if (realIndex == index) {
+				this->clickToShow(i);
+				break;
+			}
+		}
 		// 执行点击事件的处理逻辑
 		});
 	series->append(projectionError);
@@ -416,7 +430,7 @@ void CalibrationTool::createBarChart() {
 	// XY轴标签
 	QBarCategoryAxis* axisX = new QBarCategoryAxis();
 	// axisX->setTitleText("Images");
-	int skipNum = projectionError_.size() / 10 + 1;
+	int skipNum = projectionError_.size() / 9 + 1;
 	for (int i = 0; i < projectionError_.size(); i+=skipNum) {
 		axisX->append(QString::number(i+1));
 	}
