@@ -41,6 +41,7 @@ public slots:
     void startCalibrate();
     void handleListItemClick(QListWidgetItem* item); // 给上传的图片添加点击事件
     void updateProgress(int value); //相机标定的进度条更新函数
+    void clickToShow(int index);
 signals:
     void progressUpdate(int value); // 相机标定的进度条的进度序号
 private:
@@ -58,6 +59,7 @@ private:
     QAction* fileOpenAction = nullptr; //创建一个QAction指针， 打开文件动作
     QMenu* menu = nullptr;  //创建一个QMenu指针
     QProgressDialog* progressBar = nullptr; // 进度条
+    QLabel* m_tooltip = nullptr; // 条形图指针
 private:
     QStringList fileNames;
     // FullCalibrateResults fullCalibResults;
