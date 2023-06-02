@@ -49,6 +49,7 @@ public slots:
     /*处理弹出菜单上的Delete事件*/
     void onActionDelete();
     void onActionClear();
+    void onActionRemoveAndReCalibrate();
 
 signals:
     void progressUpdate(int value); // 相机标定的进度条的进度序号
@@ -58,24 +59,30 @@ private:
     void createBarChart(); // 画条形图
     void createPatternCentric();
 private:
-    void selectFile();
     //弹出选择文件对话框
-    void showImageList();
+    void selectFile();
     //用缩略图显示图片
+    void showImageList();
+    //标定函数
+    void calcSizeAndCalib();
 private:
-    int maxIndex = 0;
+    int maxMapIndex = 0;
+    int maxNameIndex = 0;
     QAction* fileOpenAction = nullptr; //创建一个QAction指针， 打开文件动作
     QMenu* menu = nullptr;  //创建一个QMenu指针
     QProgressDialog* progressBar = nullptr; // 进度条
     QLabel* m_tooltip = nullptr; // 条形图指针
+
     QMenu* popMenu_In_ListWidget_ = nullptr;/*弹出菜单*/
     QAction* action_Delete_In_ListWidget_ = nullptr;/*菜单上的Action*/
     QAction* action_Clear_In_ListWidget_ = nullptr;/*菜单上的Action*/
+    QAction* action_Delete_And_ReCalibrate_In_ListWidget_ = nullptr;
+
 private:
     QStringList fileNames;
     // FullCalibrateResults fullCalibResults;
     CalibrateResults calibResults;
     vector<vector<cv::Point2f>> imageCorners;
-    std::unordered_map<int, QString> imageNameMap;
-    std::unordered_map<int, cv::Mat> camImageMap;
+    vector<QString> imageNameList;
+    vector<cv::Mat> imageMatList;
 };

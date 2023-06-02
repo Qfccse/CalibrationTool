@@ -29,6 +29,8 @@ CalibrationTool::CalibrationTool(QWidget* parent)
     connect(ui.imageList, &QListWidget::itemClicked, this, &CalibrationTool::handleListItemClick);
     // 右键菜单绑定点击事件
     connect(this->action_Delete_In_ListWidget_, SIGNAL(triggered()), this, SLOT(onActionDelete()));
+    connect(this->action_Clear_In_ListWidget_, SIGNAL(triggered()), this, SLOT(onActionClear()));
+    connect(this->action_Delete_And_ReCalibrate_In_ListWidget_, SIGNAL(triggered()), this, SLOT(onActionRemoveAndReCalibrate()));
     // 绑定右键显示菜单：在单击右键之后会执行槽函数， 槽函数中负责弹出右键菜单
     ui.imageList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui.imageList, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(onCustomContextMenuRequested(const QPoint&)));
@@ -63,22 +65,66 @@ void CalibrationTool::onActionDelete()
                 items.removeOne(var);
                 delete var;
             }
+            QGraphicsScene* scene = new QGraphicsScene;
+            ui.imageWindow->setScene(scene);
+            ui.imageWindow->show();
             this->imageCorners.erase(this->imageCorners.begin() + index);
-            this->imageNameMap.erase(index);
-            this->camImageMap.erase(index);
+            this->imageNameList.erase(this->imageNameList.begin() + index);
+            this->imageMatList.erase(this->imageMatList.begin() + index);
         }
     }
 }
 
 void CalibrationTool::onActionClear() {
-   // if (QMessageBox::Yes == QMessageBox::question(this, QStringLiteral("Clear Items"),
-   //     QStringLiteral("Remove %1 item").arg(QString::number(items.count())), QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes))
-   // {
+    if (QMessageBox::Yes == QMessageBox::question(this, QStringLiteral("Clear All"),
+        QStringLiteral("Remove All %1 items？").arg(QString::number(imageCorners.size())), QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes))
+    {
         ui.imageList->clear();
         this->imageCorners.clear();
-        this->imageNameMap.clear();
-        this->camImageMap.clear();
-   // }
+        this->imageNameList.clear();
+        this->imageMatList.clear();
+        this->maxNameIndex = 0;
+        this->calibResults = CalibrateResults();
+        QGraphicsScene* scene = new QGraphicsScene;
+        ui.imageWindow->setScene(scene);
+        ui.imageWindow->show();
+        // 先取消绑定，然后再绑定
+        popMenu_In_ListWidget_->removeAction(action_Delete_And_ReCalibrate_In_ListWidget_);
+        popMenu_In_ListWidget_->removeAction(action_Delete_In_ListWidget_);
+
+        popMenu_In_ListWidget_->addAction(action_Delete_In_ListWidget_);
+        popMenu_In_ListWidget_->addAction(action_Clear_In_ListWidget_);
+
+        createBarChart();
+    }
+}
+
+void CalibrationTool::onActionRemoveAndReCalibrate() {
+    QList<QListWidgetItem*> items = ui.imageList->selectedItems();
+    if (items.count() > 0)
+    {
+        int index = ui.imageList->row(items[0]);
+        qDebug() << "remove " << index << "  and calib" << endl;
+        if (QMessageBox::Yes == QMessageBox::question(this, QStringLiteral("Remove And Calibrate"),
+            QStringLiteral("Remove %1 and calibrate").arg(QString::number(index)), QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes))
+        {
+            foreach(QListWidgetItem * var, items) {
+                ui.imageList->removeItemWidget(var);
+                items.removeOne(var);
+                delete var;
+            }
+
+            QGraphicsScene* scene = new QGraphicsScene;
+            ui.imageWindow->setScene(scene);
+            ui.imageWindow->show();
+
+            this->imageCorners.erase(this->imageCorners.begin() + index);
+            this->imageNameList.erase(this->imageNameList.begin() + index);
+            this->imageMatList.erase(this->imageMatList.begin() + index);
+
+            this->calcSizeAndCalib();
+        }
+    }
 }
 
 void CalibrationTool::initImageList() {
@@ -103,9 +149,36 @@ void CalibrationTool::initImageList() {
     popMenu_In_ListWidget_ = new QMenu(this);
     action_Delete_In_ListWidget_ = new QAction(tr("Delete"), this);
     action_Clear_In_ListWidget_ = new QAction(tr("ClearAll"), this);
+    action_Delete_And_ReCalibrate_In_ListWidget_ = new QAction(tr("Delete And Recalibrate"), this);
     popMenu_In_ListWidget_->addAction(action_Delete_In_ListWidget_);
     popMenu_In_ListWidget_->addAction(action_Clear_In_ListWidget_);
 }
+void CalibrationTool::calcSizeAndCalib() {
+    bool find = false;
+    cv::Size imgSize;
+    for (int i = 0; i < this->fileNames.size(); i++) {
+        if (!this->fileNames[i].isEmpty()) {
+            imgSize = cv::imread(this->fileNames[0].toStdString()).size();
+            find = true;
+            break;
+        }
+    }
+    if (!find) {
+        imgSize.height = IMAGE_WIN_HEIGHT;
+        imgSize.width = IMAGE_WIN_WIDTH;
+    }
+
+    qDebug() << "select mode " << endl;
+    qDebug() << ui.fisheyeMode->isChecked() << endl;
+    qDebug() << ui.standardMode->isChecked() << endl;
+    if (ui.fisheyeMode->isChecked()) {
+        this->calibResults = calibarteWithCorners(this->imageCorners, imgSize, cv::BOARD_SIZE, FISH_EYE_CAM);
+    }
+    else {
+        this->calibResults = calibarteWithCorners(this->imageCorners, imgSize, cv::BOARD_SIZE, NORMAL_CAM);
+    }
+}
+
 
 void CalibrationTool::openCamara()
 {
@@ -156,17 +229,16 @@ void CalibrationTool::takingPictures()
     flip(frame, flipedFrame, 1);
     cvtColor(flipedFrame, flipedFrame, cv::COLOR_BGR2RGB);
 
-    // 这里设置Mat在map里的key为imageNameMap的size
-    this->camImageMap[this->imageNameMap.size()] = flipedFrame;
-    this->imageNameMap[this->imageNameMap.size()] = "";
-
+    // 这里设置拍照时将图片加入两个list
+    this->imageMatList.push_back(flipedFrame);
+    this->imageNameList.push_back("");
     QImage image((const uchar*)flipedFrame.data, flipedFrame.size().width, flipedFrame.size().height, QImage::Format_RGB888);
     QPixmap pixmap = QPixmap::fromImage(image);
     double ratio = static_cast<double>(image.height()) / image.width();
     QListWidgetItem* item = new QListWidgetItem();
     item->setIcon(QIcon(pixmap)); // 或者 item->setIcon(QIcon::fromImage(image));
     item->setSizeHint(QSize(IMAGE_LIST_WIDTH, IMAGE_LIST_WIDTH * ratio));
-    item->setText(QString::number(this->imageNameMap.size()));
+    item->setText(QString::number(++this->maxNameIndex));
 
     QDateTime currentDateTime = QDateTime::currentDateTime(); // 获取当前时间
     qint64 timestamp = currentDateTime.toSecsSinceEpoch(); // 转换为时间戳（秒级别）
@@ -200,50 +272,34 @@ void CalibrationTool::closeCamara()
 
 void CalibrationTool::startCalibrate() {
     // 弹窗提示未添加图片
-    if (this->fileNames.length() == 0) {
+    if (this->imageCorners.size() == 0) {
         QMessageBox::warning(this, tr("warning"),
-            tr("You haven't upload any image"));
+            tr("You haven't upload any avaliable image"));
 
         return;
     }
     // 当图片小于10张的时候，提示是否继续标定
-    if (this->fileNames.length() <= 10) {
+    if (this->imageCorners.size() <= 10) {
         int reply = QMessageBox::warning(this, tr("warning"),
-            tr("You should upload more than 10 images, would you want to continue?"),
+            tr("You should upload more than 10 avaliable images, would you want to continue?"),
             QMessageBox::Yes, QMessageBox::No);
         if (reply == QMessageBox::No) {
             return;
         }
     }
-    //ui.openCam->setEnabled(false);
-    //ui.closeCam->setEnabled(false);
-    //ui.takePic->setEnabled(false);
-    //ui.calib->setEnabled(false);
-    // 
-    cv::Mat image = cv::imread(this->fileNames[0].toStdString());
-    // this->fullCalibResults = calibrate(fileNames, NORMAL_CAM);
+    this->calcSizeAndCalib();
 
-    qDebug() << "select mode " << endl;
-    qDebug() << ui.fisheyeMode->isChecked() << endl;
-    qDebug() << ui.standardMode->isChecked() << endl;
-    if (ui.fisheyeMode->isChecked()) {
-        this->calibResults = calibarteWithCorners(this->imageCorners, image.size(), cv::BOARD_SIZE, FISH_EYE_CAM);
-    }
-    else {
-        this->calibResults = calibarteWithCorners(this->imageCorners, image.size(), cv::BOARD_SIZE, NORMAL_CAM);
+    // 先取消原本的绑定，然后再绑定新的
+    if (!popMenu_In_ListWidget_->actions().contains(action_Delete_And_ReCalibrate_In_ListWidget_))
+    {
+        popMenu_In_ListWidget_->removeAction(action_Delete_In_ListWidget_);
+        popMenu_In_ListWidget_->removeAction(action_Clear_In_ListWidget_);
+
+        popMenu_In_ListWidget_->addAction(action_Delete_And_ReCalibrate_In_ListWidget_);
+        popMenu_In_ListWidget_->addAction(action_Clear_In_ListWidget_);
     }
 
-    //qDebug() 
-       // << this->calibResults.rvecs
-        //<< this->calibResults.tvecs
-        //<< this->calibResults.rvecs
-        //<< endl;
-    //ui.openCam->setEnabled(true);
-    //ui.closeCam->setEnabled(true);
-    //ui.takePic->setEnabled(true);
-    //ui.calib->setEnabled(true);
-
-        // 画条形图和三维图
+    // 画条形图和三维图
     createBarChart();
     createPatternCentric();
 }
@@ -317,12 +373,12 @@ void CalibrationTool::selectFile() {
         // 选择图片上传的时候检测
         // this->createProgressBar(false);
 
-        // 这里每次都会重新赋值，所以下面用map存
         fileNames = fileDialog->selectedFiles();
-        int len = this->imageNameMap.size();
         for (int i = 0; i < fileNames.length(); i++) {
             fileNames[i] = QDir::toNativeSeparators(fileNames[i]);
-            this->imageNameMap[i + len] = fileNames[i];
+            this->imageNameList.push_back(fileNames[i]);
+            cv::Mat emptyMat;
+            this->imageMatList.push_back(emptyMat);
             // 在上传图片的时候检测角点
             // this->imageCorners.push_back(findOneCorners(fileNames[i], BOARD_SIZE));
             // this->progressBar->setValue((i+1)*100/ fileNames.length());
@@ -355,7 +411,7 @@ void CalibrationTool::showImageList() {
         imageItem->setIcon(QIcon(fileNames[i]));
         //重新设置单元项图片的宽度和高度
         imageItem->setSizeHint(QSize(IMAGE_LIST_WIDTH, IMAGE_LIST_WIDTH * ratio));
-        imageItem->setText(QString::number(maxIndex + 1));
+        imageItem->setText(QString::number(maxNameIndex + 1));
 
         // 悬浮显示文件名
         QFileInfo fileInfo(fileNames[i]);
@@ -367,7 +423,7 @@ void CalibrationTool::showImageList() {
         //在上传图片的时候检测角点
         this->imageCorners.push_back(findOneCorners(fileNames[i], cv::BOARD_SIZE));
         this->progressBar->setValue((i + 1) * 100 / fileNames.length());
-        this->maxIndex++;
+        this->maxNameIndex++;
     }
     //this->progressBar->setValue(100);
 
@@ -393,7 +449,7 @@ void CalibrationTool::handleListItemClick(QListWidgetItem* item)
 void CalibrationTool::clickToShow(int index) {
     qDebug() <<"total image num is" << this->imageCorners.size() << "  Clicked item text: " << index << "\n";
     vector<cv::Point2f> corners = this->imageCorners[index];
-    QString fileName = this->imageNameMap[index];
+    QString fileName = this->imageNameList[index];
     cv::Mat flipedFrame;
     if (!fileName.isEmpty()) {
         flipedFrame = cv::imread(fileName.toStdString());
@@ -402,7 +458,8 @@ void CalibrationTool::clickToShow(int index) {
     }
     else
     {
-        flipedFrame = this->camImageMap[index];
+       // flipedFrame = this->camImageMap[index];
+        flipedFrame = this->imageMatList[index];
     }
     cv::drawChessboardCorners(flipedFrame, cv::Size(9, 6), corners, !corners.empty());
 
@@ -451,12 +508,18 @@ void CalibrationTool::createBarChart() {
         qDebug() << "Clicked on bar:" << barSet->label() << "at index:" << index;
         for (int i = 0; i < this->imageCorners.size(); i++) {
             if (!imageCorners[i].empty()) {
+                qDebug() << "not empty" << endl;
+                qDebug() << "realIndex" << realIndex << endl;
+                if (realIndex == index) {
+                    this->clickToShow(i);
+                    break;
+                }
                 realIndex++;
             }
-            if (realIndex == index) {
-                this->clickToShow(i);
-                break;
+            else {
+                qDebug() << "empty" << endl;
             }
+              
         }
         // 执行点击事件的处理逻辑
         });
