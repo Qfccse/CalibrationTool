@@ -902,6 +902,157 @@ void CalibrationTool::createPatternCentric() {
     scene->addWidget(widget);
 }
 
+Qt3DCore::QEntity* createCuboid(Qt3DCore::QEntity* rootEntity, QVector3D transform) {
+    // Cuboid mesh
+    Qt3DExtras::QCuboidMesh* cuboid = new Qt3DExtras::QCuboidMesh();
+    // CuboidMesh Transform
+    Qt3DCore::QTransform* cuboidTransform = new Qt3DCore::QTransform();
+    cuboidTransform->setScale(1.0f);
+    cuboidTransform->setTranslation(transform);
+    // CuboidMesh Material
+    Qt3DExtras::QPhongMaterial* cuboidMaterial = new Qt3DExtras::QPhongMaterial();
+    cuboidMaterial->setDiffuse(QColor(Qt::red));
+    // Cuboid
+    Qt3DCore::QEntity* cuboidEntity = new Qt3DCore::QEntity(rootEntity);
+    cuboidEntity->addComponent(cuboid);
+    cuboidEntity->addComponent(cuboidMaterial);
+    cuboidEntity->addComponent(cuboidTransform);
+
+    return cuboidEntity;
+}
+
+
+
+void createAxis(Qt3DCore::QEntity* rootEntity) {
+    // ´´½¨×ø±êÖá (x¡ú,y¡ü,z¡ñ)
+    // Axis entity
+    Qt3DCore::QEntity* axisEntity = new Qt3DCore::QEntity(rootEntity);
+
+    // X-axis
+    // X-axis mesh
+    Qt3DExtras::QCylinderMesh* xAxisMesh = new Qt3DExtras::QCylinderMesh();
+    xAxisMesh->setRadius(0.1f);
+    xAxisMesh->setLength(20.0f);
+    // X-axis material
+    Qt3DExtras::QPhongMaterial* xAxisMaterial = new Qt3DExtras::QPhongMaterial();
+    xAxisMaterial->setAmbient(Qt::red); //color
+    // X-axis transform
+    Qt3DCore::QTransform* xAxisTransform = new Qt3DCore::QTransform();
+    xAxisTransform->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), 90.0f));
+    xAxisTransform->setTranslation(QVector3D(0.0f, -10.0f, 10.0f));
+    // X-axis entity
+    Qt3DCore::QEntity* xAxisEntity = new Qt3DCore::QEntity(axisEntity);
+    xAxisEntity->addComponent(xAxisMesh);
+    xAxisEntity->addComponent(xAxisMaterial);
+    xAxisEntity->addComponent(xAxisTransform);
+
+    // Y-axis
+    // Y-axis mesh
+    Qt3DExtras::QCylinderMesh* yAxisMesh = new Qt3DExtras::QCylinderMesh();
+    yAxisMesh->setRadius(0.1f);
+    yAxisMesh->setLength(20.0f);
+    // Y-axis material
+    Qt3DExtras::QPhongMaterial* zXxisMaterial = new Qt3DExtras::QPhongMaterial();
+    zXxisMaterial->setAmbient(Qt::green); //color
+    // Y-axis transform
+    Qt3DCore::QTransform* yAxisTransform = new Qt3DCore::QTransform();
+    yAxisTransform->setTranslation(QVector3D(-10.0f, 0.0f, 10.0f));
+    // Y-axis entity
+    Qt3DCore::QEntity* yAxisEntity = new Qt3DCore::QEntity(axisEntity);
+    yAxisEntity->addComponent(yAxisMesh);
+    yAxisEntity->addComponent(zXxisMaterial);
+    yAxisEntity->addComponent(yAxisTransform);
+
+    // Z-axis
+    // Z-axis mesh
+    Qt3DExtras::QCylinderMesh* zAxisMesh = new Qt3DExtras::QCylinderMesh();
+    zAxisMesh->setRadius(0.1f);
+    zAxisMesh->setLength(20.0f);
+    // Z-axis material
+    Qt3DExtras::QPhongMaterial* zAxisMaterial = new Qt3DExtras::QPhongMaterial();
+    zAxisMaterial->setAmbient(Qt::blue); //color
+    // Z-axis transform
+    Qt3DCore::QTransform* zAxisTransform = new Qt3DCore::QTransform();
+    zAxisTransform->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), -90.0f));
+    zAxisTransform->setTranslation(QVector3D(10.0f, -10.0f, 0.0f));
+    // Z-axis entity
+    Qt3DCore::QEntity* zAxisEntity = new Qt3DCore::QEntity(axisEntity);
+    zAxisEntity->addComponent(zAxisMesh);
+    zAxisEntity->addComponent(zAxisMaterial);
+    zAxisEntity->addComponent(zAxisTransform);
+
+    // ÖáÏß
+    // axis mesh
+    Qt3DExtras::QCylinderMesh* AxisMesh = new Qt3DExtras::QCylinderMesh();
+    AxisMesh->setRadius(0.05f);
+    AxisMesh->setLength(20.0f);
+    // axis material
+    Qt3DExtras::QPhongMaterial* AxisMaterial = new Qt3DExtras::QPhongMaterial();
+    AxisMaterial->setAmbient(Qt::gray); //color
+
+    vector<Qt3DCore::QTransform*> AxisTransforms;
+    vector<Qt3DCore::QEntity*> AxisEntitys;
+    vector<QVector3D> AxisTransforms_ = {
+        {0.0f, -10.0f, 5.0f}, {0.0f, -10.0f, 0.0f}, {0.0f, -10.0f, -5.0f}, {0.0f, -10.0f, -10.0f},
+        {0.0f, -5.0f, -10.0f}, {0.0f, 0.0f, -10.0f}, {0.0f, 5.0f, -10.0f}, {0.0f, 10.0f, -10.0f},
+
+        {-10.0f, 0.0f, 5.0f}, {-10.0f, 0.0f, 0.0f}, {-10.0f, 0.0f, -5.0f}, {-10.0f, 0.0f, -10.0f},
+        {-5.0f, 0.0f, -10.0f}, {-0.0f, 0.0f, -10.0f}, {5.0f, 0.0f, -10.0f}, {10.0f, 0.0f, -10.0f},
+
+        {5.0f, -10.0f, 0.0f}, {0.0f, -10.0f, 0.0f}, {-5.0f, -10.0f, 0.0f}, {-10.0f, -10.0f, 0.0f},
+        {-10.0f, -5.0f, 0.0f}, {-10.0f, 0.0f, 0.0f}, {-10.0f, 5.0f, 0.0f}, {-10.0f, 10.0f, 0.0f},
+    };
+    for (int i = 0; i < AxisTransforms_.size(); i++) {
+        AxisTransforms.push_back(new Qt3DCore::QTransform());
+
+        if (i >= 0 && i <= 7) {
+            // Æ½ÐÐxÖáµÄÖáÏß
+            AxisTransforms[i]->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), 90.0f));
+        }
+        else if (i >= 8 && i <= 15) {
+            // Æ½ÐÐyÖáµÄÖáÏß
+            //AxisTransforms[i]->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), 90.0f));
+        }
+        else if (i >= 16) {
+            // Æ½ÐÐzÖáµÄÖáÏß
+            AxisTransforms[i]->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), -90.0f));
+        }
+
+        AxisTransforms[i]->setTranslation(AxisTransforms_[i]);
+
+        AxisEntitys.push_back(new Qt3DCore::QEntity(axisEntity));
+        AxisEntitys[i]->addComponent(AxisMesh);
+        AxisEntitys[i]->addComponent(AxisMaterial);
+        AxisEntitys[i]->addComponent(AxisTransforms[i]);
+    }
+    
+}
+
+void createPlane(Qt3DCore::QEntity* rootEntity) {
+    // Plane mesh
+    Qt3DExtras::QPlaneMesh* planeMesh = new Qt3DExtras::QPlaneMesh();
+    planeMesh->setWidth(1);
+    planeMesh->setHeight(1);
+    // Plane transform
+    Qt3DCore::QTransform* planeTransform = new Qt3DCore::QTransform();
+    planeTransform->setScale(8.0f);
+    planeTransform->setTranslation(QVector3D(0.0f, 0.0f, 0.0f));
+    // Plane material
+    Qt3DExtras::QPhongMaterial* planeMaterial = new Qt3DExtras::QPhongMaterial();
+    planeMaterial->setAmbient(QColor(Qt::yellow));
+    // Plane
+    Qt3DCore::QEntity* planeEntity = new Qt3DCore::QEntity(rootEntity);
+    planeEntity->addComponent(planeMesh);
+    planeEntity->addComponent(planeMaterial);
+    planeEntity->addComponent(planeTransform);
+}
+
+
+
+// ÐÞ¸Ä×ø±êÖáÎ»ÖÃ
+// »­ÖáÏß
+// »­¿Ì¶È
+// ÏòÁ¿±£´æÏà»úÄ£ÐÍ
 void CalibrationTool::createPatternCentric2() {
     // ï¿½ï¿½ï¿½ï¿½ï¿½Ó´ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½Ã´ï¿½Ð¡
     QWidget* childWidget = new QWidget(this);
@@ -916,6 +1067,7 @@ void CalibrationTool::createPatternCentric2() {
     // ï¿½ï¿½ï¿½ï¿½ 3D Êµï¿½ï¿½
     Qt3DCore::QEntity* rootEntity = new Qt3DCore::QEntity();
 
+<<<<<<< Updated upstream
     // ï¿½ï¿½ï¿½ï¿½ 3D ï¿½ï¿½ï¿½ï¿½
     Qt3DExtras::QSphereMesh* sphereMesh = new Qt3DExtras::QSphereMesh();
     sphereMesh->setRadius(1.0);
@@ -930,24 +1082,71 @@ void CalibrationTool::createPatternCentric2() {
     sphereEntity->addComponent(material);
 
     // ï¿½ï¿½ï¿½ï¿½ 3D ï¿½ï¿½ï¿½
+=======
+    // ´´½¨ 3D Ïà»ú
+>>>>>>> Stashed changes
     Qt3DRender::QCamera* camera = view3D->camera();
-    camera->lens()->setPerspectiveProjection(45.0f, 1.0f, 0.1f, 100.0f);
-    camera->setPosition(QVector3D(0, 0, 5));
+    camera->lens()->setPerspectiveProjection(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
+    camera->setPosition(QVector3D(30.0f, 15.0f, 30.0f));
+    camera->setUpVector(QVector3D(0, 1, 0));
     camera->setViewCenter(QVector3D(0, 0, 0));
 
     // ï¿½ï¿½ï¿½ï¿½ 3D ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     Qt3DExtras::QOrbitCameraController* cameraController = new Qt3DExtras::QOrbitCameraController(rootEntity);
+    cameraController->setLinearSpeed(100.0f);  // ÉèÖÃÏà»úµÄÏßÐÔËÙ¶È
+    cameraController->setLookSpeed(100.0f);  // ÉèÖÃÏà»úµÄÐý×ªËÙ¶È
     cameraController->setCamera(camera);
 
+<<<<<<< Updated upstream
     // ï¿½ï¿½ï¿½Ã¸ï¿½Êµï¿½ï¿½
+=======
+    // Light
+    Qt3DCore::QEntity* lightEntity = new Qt3DCore::QEntity(rootEntity);
+    Qt3DRender::QPointLight* light = new Qt3DRender::QPointLight(lightEntity);
+    light->setColor("white");
+    light->setIntensity(1);
+    lightEntity->addComponent(light);
+    Qt3DCore::QTransform* lightTransform = new Qt3DCore::QTransform(lightEntity);
+    lightTransform->setTranslation(camera->position());
+    //lightTransform->setTranslation(QVector3D(0, 50, 0));
+    lightEntity->addComponent(lightTransform);
+
+    // ÉèÖÃ¸ùÊµÌå
+>>>>>>> Stashed changes
     view3D->setRootEntity(rootEntity);
 
     // ï¿½ï¿½ï¿½Ó´ï¿½ï¿½Ú¹Ì¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â½Ç£ï¿½ï¿½ï¿½Ã²ï¿½Òªï¿½Ä¶ï¿½
     QGridLayout* gridLayout = new QGridLayout(ui.centralWidget);
     gridLayout->setContentsMargins(0, 0, 40, 50);
     gridLayout->addWidget(childWidget, 0, 0, Qt::AlignBottom | Qt::AlignRight);
+
+    // ************************************************
+    // Ïò³¡¾°ÖÐÌí¼ÓÎïÌå
+    // ************************************************
+    // ´´½¨ ×ø±êÖá
+    createAxis(rootEntity);
+    // ´´½¨ ±ê¶¨°åÆ½Ãæ
+    createPlane(rootEntity);
+
+    // ´´½¨ Ïà»úÎ»×Ë
+    vector<Qt3DCore::QEntity*> cuboids;
+    // Í¨¹ý±éÀúËù¸øµÄÎ»ÖÃÏòÁ¿£¬´´½¨¶à¸ö
+    cuboids.push_back(createCuboid(rootEntity, QVector3D(0.0f, 0.0f, 0.0f)));
+    //cuboids.push_back(createCuboid(rootEntity, QVector3D(20.0f, 20.0f, 30.0f)));
+
+    //// ´´½¨ÎÄ±¾ÊµÌå
+    //Qt3DRender::QTextEntity* textEntity = new Qt3DRender::QTextEntity(&rootEntity);
+    //textEntity->setText("Hello, World!");
+    //textEntity->setFont(QFontDatabase::systemFont(QFontDatabase::SansSerif, QFontDatabase::Normal, 12));
+    //textEntity->setHeight(0.2f);
+    //textEntity->setHorizontalAlignment(Qt::AlignCenter);
+    //textEntity->setVerticalAlignment(Qt::AlignVCenter);
+    //textEntity->setPosition(QVector3D(0.0f, 0.0f, -2.0f));
 }
 
 
+<<<<<<< Updated upstream
 void CalibrationTool::calculatePosition() {
 }
+=======
+>>>>>>> Stashed changes
