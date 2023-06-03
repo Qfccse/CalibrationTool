@@ -51,6 +51,8 @@ public slots:
     void onActionDelete();
     void onActionClear();
     void onActionRemoveAndReCalibrate();
+    
+    void changeShowUndistorted();//切换图片样式
 
 signals:
     void progressUpdate(int value); // 相机标定的进度条的进度序号

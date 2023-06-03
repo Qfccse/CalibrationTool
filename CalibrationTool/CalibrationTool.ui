@@ -186,55 +186,6 @@ overflow: hidden;
       </widget>
      </item>
      <item>
-      <widget class="QWidget" name="widget" native="true">
-       <widget class="QPushButton" name="showUndistorted">
-        <property name="geometry">
-         <rect>
-          <x>8</x>
-          <y>10</y>
-          <width>120</width>
-          <height>23</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Show Undistorted</string>
-        </property>
-       </widget>
-       <widget class="QDoubleSpinBox" name="fishEyeScale">
-        <property name="geometry">
-         <rect>
-          <x>87</x>
-          <y>50</y>
-          <width>40</width>
-          <height>20</height>
-         </rect>
-        </property>
-        <property name="decimals">
-         <number>1</number>
-        </property>
-       </widget>
-       <widget class="QLabel" name="fishEyeScaleLabel">
-        <property name="geometry">
-         <rect>
-          <x>8</x>
-          <y>50</y>
-          <width>75</width>
-          <height>20</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>8</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Fisheye Scale</string>
-        </property>
-       </widget>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="takePic">
        <property name="toolTip">
         <string>take a shot</string>
@@ -255,6 +206,32 @@ overflow: hidden;
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="changePicMode">
+       <property name="toolTip">
+        <string>change the picture mode</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="CalibrationTool.qrc">
+         <normaloff>:/picture/picture/undistortedChess.png</normaloff>
+         <normalon>:/picture/picture/distortedChess.png</normalon>
+         <activeon>:/picture/picture/distortedChess.png</activeon>
+         <selectedon>:/picture/picture/distortedChess.png</selectedon>:/picture/picture/undistortedChess.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>60</width>
+         <height>60</height>
+        </size>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="Export">
        <property name="toolTip">
         <string>export parameters</string>
@@ -271,6 +248,9 @@ overflow: hidden;
          <width>60</width>
          <height>60</height>
         </size>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -313,6 +293,19 @@ overflow: hidden;
       </widget>
      </item>
     </layout>
+   </widget>
+   <widget class="QLabel" name="loadingLabel">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>330</y>
+      <width>100</width>
+      <height>100</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>loading label</string>
+    </property>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>

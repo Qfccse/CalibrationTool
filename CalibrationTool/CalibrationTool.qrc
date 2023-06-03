@@ -1,6 +1,8 @@
 <RCC>
-  <qresource prefix="CalibrationTool"/>
-  <qresource prefix="picture">
+  <qresource prefix="/CalibrationTool"/>
+  <qresource prefix="/picture">
+    <file>picture/distortedChess.png</file>
+    <file>picture/undistortedChess.png</file>
     <file>picture/camera.png</file>
     <file>picture/openning.png</file>
     <file>picture/Export.png</file>
@@ -11,5 +13,6 @@
     <file>picture/closeCamera.png</file>
     <file>picture/openCamera.png</file>
     <file>picture/file.png</file>
+    <file>picture/loading.gif</file>
   </qresource>
 </RCC>

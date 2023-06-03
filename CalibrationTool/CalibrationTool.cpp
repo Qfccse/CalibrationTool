@@ -24,6 +24,7 @@ CalibrationTool::CalibrationTool(QWidget* parent)
     connect(ui.closeCam, SIGNAL(clicked()), this, SLOT(closeCamara()));
     connect(ui.calib, SIGNAL(clicked()), this, SLOT(startCalibrate()));
     connect(ui.open, SIGNAL(clicked()), this, SLOT(fileOpenActionSlot()));
+    connect(ui.changePicMode, SIGNAL(clicked()), this, SLOT(changeShowUndistorted()));
 
     // ui.imageList
     connect(ui.imageList, &QListWidget::itemClicked, this, &CalibrationTool::handleListItemClick);
@@ -38,7 +39,7 @@ CalibrationTool::CalibrationTool(QWidget* parent)
     createBarChart();
     //createPatternCentric();
     createPatternCentric2();
-    //createLoading();
+    createLoading();
 }
 
 CalibrationTool::~CalibrationTool()
@@ -293,8 +294,10 @@ void CalibrationTool::startCalibrate() {
             return;
         }
     }
+    ui.loadingLabel->setVisible(true);
     this->calcSizeAndCalib();
     this->clickToUndistort();
+    //ui.loadingLabel->setVisible(false);
 
     // 先取消原本的绑定，然后再绑定新的
     if (!popMenu_In_ListWidget_->actions().contains(action_Delete_And_ReCalibrate_In_ListWidget_))
@@ -319,35 +322,14 @@ void CalibrationTool::updateProgress(int value)
 
 
 void CalibrationTool::createLoading() {
-    QMovie* m_pLoadingMovie = new QMovie("D:\\workspace\\cv\\CalibrationTool\\CalibrationTool\\CalibrationTool\\picture\\loading.gif");
+    QMovie* m_pLoadingMovie = new QMovie(":/picture/picture/loading.gif");
     m_pLoadingMovie->setScaledSize(QSize(120, 120));
     QFrame* m_pCenterFrame = new QFrame(this);
     m_pCenterFrame->setGeometry(200, 200, 230, 230);
-    QLabel* m_pMovieLabel = new QLabel(m_pCenterFrame);
-    m_pMovieLabel->setGeometry(55, 10, 120, 120);
-    m_pMovieLabel->setScaledContents(true);
-    m_pMovieLabel->setMovie(m_pLoadingMovie);
+    ui.loadingLabel->setScaledContents(true);
+    ui.loadingLabel->setMovie(m_pLoadingMovie);
     m_pLoadingMovie->start();
-
-
-    //提示文本
-    QLabel* m_pTipsLabel = new QLabel(m_pCenterFrame);
-    m_pTipsLabel->setGeometry(5, 130, 220, 50);
-    m_pTipsLabel->setAlignment(Qt::AlignCenter | Qt::AlignHCenter);
-    m_pTipsLabel->setObjectName("tips");
-    m_pTipsLabel->setText("Calibrating...");
-    m_pTipsLabel->setStyleSheet("QLabel#tips{font-family:\"Microsoft YaHei\";font-size: 15px;color: #333333;}");
-
-    QMessageBox messageBox;
-    messageBox.setWindowTitle("Loading");
-    messageBox.setText("Please wait...");
-
-    // 将 QLabel 添加到弹窗中
-    messageBox.layout()->addWidget(m_pMovieLabel);
-
-    // 显示弹窗
-    messageBox.show();
-    //m_pMovieLabel->show();
+    ui.loadingLabel->setVisible(false);
 }
 
 void CalibrationTool::fileOpenActionSlot()
@@ -487,13 +469,35 @@ void CalibrationTool::handleListItemClick(QListWidgetItem* item)
     this->clickToShow(index);
 
 }
+
+void CalibrationTool::changeShowUndistorted() {
+    if (this->showUndistored)
+    {
+        qDebug() << "this->showUndistored = false";
+        this->showUndistored = false;
+        ui.changePicMode->setIcon(QIcon(":/picture/picture/distortedChess.png"));
+        //切换图片为鱼眼样式
+    }
+    else
+    {
+        qDebug() << "this->showUndistored = true";
+        ui.changePicMode->setIcon(QIcon(":/picture/picture/undistortedChess.png"));
+        if (calibResults.distCoeffs.empty())
+        {
+            qDebug() << "this->showUndistored = empty";
+            return;
+        }
+        this->showUndistored = true;
+        //切换图片为正常样式
+    }
+}
+
 void CalibrationTool::clickToShow(int index) {
     qDebug() <<"total image num is" << this->imageCorners.size() << "  Clicked item text: " << index << "\n";
     vector<cv::Point2f> corners = this->imageCorners[index];
     QString fileName = this->imageNameList[index];
     cv::Mat flipedFrame;
-  
-    this->showUndistored = true;
+
     // 获取点击的图片
     if (!this->showUndistored) {
         flipedFrame = this->imageMatList[index];
