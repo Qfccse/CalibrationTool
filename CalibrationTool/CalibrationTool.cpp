@@ -311,7 +311,7 @@ void CalibrationTool::startCalibrate() {
 
     // 画条形图和三维图
     createBarChart();
-    createPatternCentric();
+    createPatternCentric2();
 }
 // 在窗口类的实现文件中实现槽函数来更新进度条
 void CalibrationTool::updateProgress(int value)
@@ -480,14 +480,14 @@ void CalibrationTool::changeShowUndistorted() {
     }
     else
     {
-        qDebug() << "this->showUndistored = true";
-        ui.changePicMode->setIcon(QIcon(":/picture/picture/distortedChess.png"));
         if (calibResults.distCoeffs.empty())
         {
             qDebug() << "this->showUndistored = empty";
             return;
         }
-        this->showUndistored = false;
+        qDebug() << "this->showUndistored = true";
+        ui.changePicMode->setIcon(QIcon(":/picture/picture/distortedChess.png"));
+        this->showUndistored = true;
         //切换图片为正常样式
     }
 }
@@ -868,18 +868,109 @@ void CalibrationTool::createPatternCentric2() {
     // 创建 3D 实体
     Qt3DCore::QEntity* rootEntity = new Qt3DCore::QEntity();
 
-    // 创建 3D 球体
-    Qt3DExtras::QSphereMesh* sphereMesh = new Qt3DExtras::QSphereMesh();
-    sphereMesh->setRadius(1.0);
-
     // 创建 3D 材质
-    Qt3DExtras::QDiffuseSpecularMaterial* material = new Qt3DExtras::QDiffuseSpecularMaterial();
-    material->setDiffuse(QColor(255, 0, 0)); // 设置球体的漫反射颜色为红色
+    //Qt3DExtras::QDiffuseSpecularMaterial* material = new Qt3DExtras::QDiffuseSpecularMaterial();
+   // material->setDiffuse(QColor(0, 0, 255)); // 设置球体的漫反射颜色为红色
+    Qt3DExtras::QPhongAlphaMaterial* material = new Qt3DExtras::QPhongAlphaMaterial();
+    material->setDiffuse(QColor(0,0,255,0));
+    // 创建并设置边框宽度的参数
+    Qt3DRender::QParameter* lineWidthParam = new Qt3DRender::QParameter;
+    lineWidthParam->setName("lineWidth");
+    lineWidthParam->setValue(1.0); // 设置边框宽度
 
-    // 创建 3D 实体组件
-    Qt3DCore::QEntity* sphereEntity = new Qt3DCore::QEntity(rootEntity);
-    sphereEntity->addComponent(sphereMesh);
-    sphereEntity->addComponent(material);
+    // 创建边框颜色参数
+    Qt3DRender::QParameter* lineColorParam = new Qt3DRender::QParameter;
+    lineColorParam->setName("lineColor");
+    lineColorParam->setValue(QColor(255, 0, 0)); // 设置边框颜色
+
+    // 将参数添加到材质中
+    material->addParameter(lineWidthParam);
+    material->addParameter(lineColorParam);
+
+
+    //std::vector<double> temp11 = { 3.7255595916094270e-01, -3.2286315095976620e-01, 2.5998065119306002e+00 };
+    //std::vector<double> temp12 = { 6.1493345305296354e-01, 1.8370675629054839e-01, -3.0332846618352547e+00 };
+    //std::vector<double> temp13 = { -3.1328447296075423e-01, -1.8878982619689827e-01, 3.1227561623556346e+00 };
+    //std::vector<std::vector<double> > r = { temp11,temp12,temp13 };
+
+    //std::vector<double> temp21 = { 3.6222302556773556e-01, 1.8124125958992307e-01, 9.1641694205212221e-01 };
+    //std::vector<double> temp22 = { 5.1387812804136901e-02, 4.1264447962786516e-01, 1.2561808957122409e+00 };
+    //std::vector<double> temp23 = { 1.6484524415527824e-01, 7.4722399627735903e-01, 1.4310930451633073e+00 };
+    //std::vector<std::vector<double> > t = { temp21,temp22,temp23 };
+    qDebug() << "rvec   " << endl;
+    qDebug() << this->calibResults.rvecs.size() << endl;
+    for (int i = 0; i < this->calibResults.rvecs.size(); i++) {
+        qDebug() << this->calibResults.rvecs[i].size().height <<endl<< this->calibResults.rvecs[i].size().width<< endl;
+        qDebug() <<this->calibResults.rvecs[i].at<uchar>(0, 0) << endl;
+        qDebug() << this->calibResults.rvecs[i].at<uchar>(0, 1) << endl;
+        // 创建 3D 球体
+        Qt3DExtras::QCuboidMesh* cubeMesh = new Qt3DExtras::QCuboidMesh();
+        cubeMesh->setXExtent(2.0);
+        cubeMesh->setYExtent(0.1);
+        cubeMesh->setZExtent(2.0);
+        // 创建 3D 实体组件
+        Qt3DCore::QEntity* cubeEntity = new Qt3DCore::QEntity(rootEntity);
+        cubeEntity->addComponent(cubeMesh);
+        cubeEntity->addComponent(material); // 使用透明材质渲染矩形的每个面
+
+        // 创建 3D 变换组件
+        Qt3DCore::QTransform* transform = new Qt3DCore::QTransform();
+        cubeEntity->addComponent(transform);
+
+        // 旋转立方体
+        QVector3D rotationVector(
+            static_cast<float>(this->calibResults.rvecs[i].at<uchar>(0, 0)),
+            static_cast<float>(this->calibResults.rvecs[i].at<uchar>(1, 0)),
+            static_cast<float>(this->calibResults.rvecs[i].at<uchar>(2, 0))
+        );
+        QQuaternion rotation = QQuaternion::fromEulerAngles(rotationVector);
+        transform->setRotation(rotation);
+
+            
+        // 平移立方体
+        QVector3D translation(
+            static_cast<float>(this->calibResults.tvecs[i].at<uchar>(0, 0)),
+            static_cast<float>(this->calibResults.tvecs[i].at<uchar>(1, 0)),
+            static_cast<float>(this->calibResults.tvecs[i].at<uchar>(2, 0))
+        );
+        transform->setTranslation(translation);
+    }
+    // 创建 3D 实体
+    //Qt3DCore::QEntity* rootEntity = new Qt3DCore::QEntity();
+
+    //// 创建 3D 球体
+    //Qt3DExtras::QCuboidMesh* cubeMesh = new Qt3DExtras::QCuboidMesh();
+    //cubeMesh->setXExtent(2.0);
+    //cubeMesh->setYExtent(0.1);
+    //cubeMesh->setZExtent(2.0);
+    //// 创建 3D 实体组件
+    //Qt3DCore::QEntity* cubeEntity = new Qt3DCore::QEntity(rootEntity);
+    //cubeEntity->addComponent(cubeMesh);
+    //cubeEntity->addComponent(material);
+
+    //// 创建 3D 变换组件
+    //Qt3DCore::QTransform* transform = new Qt3DCore::QTransform();
+    //cubeEntity->addComponent(transform);
+    //
+    // 旋转立方体
+    //QVector3D rotationVector(
+    //    static_cast<float>(3.7255595916094270e-01),
+    //    static_cast<float>(-3.2286315095976620e-01),
+    //    static_cast<float>(2.5998065119306002e+00)
+    //);
+    //QQuaternion rotation = QQuaternion::fromEulerAngles(rotationVector);
+    //transform->setRotation(rotation);
+
+    //    
+    //// 平移立方体
+    //QVector3D translation(
+    //    static_cast<float>(3.6222302556773556e-01),
+    //    static_cast<float>(1.8124125958992307e-01),
+    //    static_cast<float>(9.1641694205212221e-01)
+    //);
+    //transform->setTranslation(translation);
+
+
 
     // 创建 3D 相机
     Qt3DRender::QCamera* camera = view3D->camera();
@@ -891,6 +982,9 @@ void CalibrationTool::createPatternCentric2() {
     Qt3DExtras::QOrbitCameraController* cameraController = new Qt3DExtras::QOrbitCameraController(rootEntity);
     cameraController->setCamera(camera);
 
+
+
+
     // 设置根实体
     view3D->setRootEntity(rootEntity);
 
@@ -898,4 +992,23 @@ void CalibrationTool::createPatternCentric2() {
     QGridLayout* gridLayout = new QGridLayout(ui.centralWidget);
     gridLayout->setContentsMargins(0, 0, 40, 50);
     gridLayout->addWidget(childWidget, 0, 0, Qt::AlignBottom | Qt::AlignRight);
+}
+
+void CalibrationTool::calculateAxisAngle() {
+    // 将旋转向量转换为轴角表示法
+    std::vector<cv::Vec3d> axisAngles;
+    for (const auto& rvec : this->calibResults.rvecs) {
+        cv::Mat rotationMatrix;
+        cv::Rodrigues(rvec, rotationMatrix);
+        cv::Vec3d axisAngle;
+        cv::Rodrigues(rotationMatrix, axisAngle);
+        axisAngles.push_back(axisAngle);
+    }
+
+    // 打印每个图像的轴角表示法
+    for (const auto& axisAngle : axisAngles) {
+        std::cout << "Axis: " << axisAngle[0] << ", " << axisAngle[1] << ", " << axisAngle[2] << std::endl;
+        std::cout << "Angle: " << cv::norm(axisAngle) << std::endl;
+    }
+
 }

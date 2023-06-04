@@ -63,6 +63,9 @@ private:
     void createBarChart(); // 画条形图
     void createPatternCentric();
     void createPatternCentric2();
+
+
+    void calculateAxisAngle();
 private:
     //弹出选择文件对话框
     void selectFile();
