@@ -215,11 +215,7 @@ overflow: hidden;
        </property>
        <property name="icon">
         <iconset resource="CalibrationTool.qrc">
-         <normaloff>:/picture/picture/undistortedChess.png</normaloff>
-         <normalon>:/picture/picture/distortedChess.png</normalon>
-         <disabledon>:/picture/picture/distortedChess.png</disabledon>
-         <activeon>:/picture/picture/distortedChess.png</activeon>
-         <selectedon>:/picture/picture/distortedChess.png</selectedon>:/picture/picture/undistortedChess.png</iconset>
+         <normaloff>:/picture/picture/distortedChess.png</normaloff>:/picture/picture/distortedChess.png</iconset>
        </property>
        <property name="iconSize">
         <size>

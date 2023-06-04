@@ -490,9 +490,11 @@ void CalibrationTool::changeShowUndistorted() {
         this->showUndistored = true;
         //切换图片为正常样式
     }
+    clickToShow(clickedIndex);
 }
 
 void CalibrationTool::clickToShow(int index) {
+    clickedIndex = index;
     qDebug() <<"total image num is" << this->imageCorners.size() << "  Clicked item text: " << index << "\n";
     vector<cv::Point2f> corners = this->imageCorners[index];
     QString fileName = this->imageNameList[index];
