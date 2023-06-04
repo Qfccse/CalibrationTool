@@ -38,7 +38,7 @@ CalibrationTool::CalibrationTool(QWidget* parent)
 
     createBarChart();
     //createPatternCentric();
-    createPatternCentric2();
+    //createPatternCentric2();
     createLoading();
 }
 
@@ -901,8 +901,8 @@ void CalibrationTool::createPatternCentric2() {
     qDebug() << this->calibResults.rvecs.size() << endl;
     for (int i = 0; i < this->calibResults.rvecs.size(); i++) {
         qDebug() << this->calibResults.rvecs[i].size().height <<endl<< this->calibResults.rvecs[i].size().width<< endl;
-        qDebug() <<this->calibResults.rvecs[i].at<uchar>(0, 0) << endl;
-        qDebug() << this->calibResults.rvecs[i].at<uchar>(0, 1) << endl;
+        qDebug() <<this->calibResults.rvecs[i].at<double>(0, 0) << endl;
+        qDebug() << this->calibResults.rvecs[i].at<double>(1, 0) << endl;
         // 创建 3D 球体
         Qt3DExtras::QCuboidMesh* cubeMesh = new Qt3DExtras::QCuboidMesh();
         cubeMesh->setXExtent(2.0);
@@ -919,9 +919,9 @@ void CalibrationTool::createPatternCentric2() {
 
         // 旋转立方体
         QVector3D rotationVector(
-            static_cast<float>(this->calibResults.rvecs[i].at<uchar>(0, 0)),
-            static_cast<float>(this->calibResults.rvecs[i].at<uchar>(1, 0)),
-            static_cast<float>(this->calibResults.rvecs[i].at<uchar>(2, 0))
+            static_cast<float>(this->calibResults.rvecs[i].at<double>(0, 0)),
+            static_cast<float>(this->calibResults.rvecs[i].at<double>(1, 0)),
+            static_cast<float>(this->calibResults.rvecs[i].at<double>(2, 0))
         );
         QQuaternion rotation = QQuaternion::fromEulerAngles(rotationVector);
         transform->setRotation(rotation);
@@ -929,9 +929,9 @@ void CalibrationTool::createPatternCentric2() {
             
         // 平移立方体
         QVector3D translation(
-            static_cast<float>(this->calibResults.tvecs[i].at<uchar>(0, 0)),
-            static_cast<float>(this->calibResults.tvecs[i].at<uchar>(1, 0)),
-            static_cast<float>(this->calibResults.tvecs[i].at<uchar>(2, 0))
+            static_cast<float>(this->calibResults.tvecs[i].at<double>(0, 0)),
+            static_cast<float>(this->calibResults.tvecs[i].at<double>(1, 0)),
+            static_cast<float>(this->calibResults.tvecs[i].at<double>(2, 0))
         );
         transform->setTranslation(translation);
     }
