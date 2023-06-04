@@ -81,10 +81,10 @@ private:
     QAction* action_Delete_In_ListWidget_ = nullptr;/*菜单上的Action*/
     QAction* action_Clear_In_ListWidget_ = nullptr;/*菜单上的Action*/
     QAction* action_Delete_And_ReCalibrate_In_ListWidget_ = nullptr;
-
+public:
+    bool showUndistored;
 private:
     int maxNameIndex = 0;
-    bool showUndistored = false;
     QStringList fileNames;
     // FullCalibrateResults fullCalibResults;
     CalibrateResults calibResults;
