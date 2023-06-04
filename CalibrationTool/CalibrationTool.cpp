@@ -475,7 +475,7 @@ void CalibrationTool::changeShowUndistorted() {
     {
         qDebug() << "this->showUndistored = false";
         this->showUndistored = false;
-        ui.changePicMode->setIcon(QIcon(":/picture/picture/undistortedChess.png"));
+        ui.changePicMode->setIcon(QIcon(":/picture/picture/distortedChess.png"));
         //切换图片为鱼眼样式
     }
     else
@@ -486,7 +486,7 @@ void CalibrationTool::changeShowUndistorted() {
             return;
         }
         qDebug() << "this->showUndistored = true";
-        ui.changePicMode->setIcon(QIcon(":/picture/picture/distortedChess.png"));
+        ui.changePicMode->setIcon(QIcon(":/picture/picture/undistortedChess.png"));
         this->showUndistored = true;
         //切换图片为正常样式
     }
