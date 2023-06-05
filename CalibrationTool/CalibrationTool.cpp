@@ -38,7 +38,7 @@ CalibrationTool::CalibrationTool(QWidget* parent)
 
     createBarChart();
     //createPatternCentric();
-    //createPatternCentric2();
+    createPatternCentric2();
     createLoading();
 }
 
@@ -1107,78 +1107,78 @@ void CalibrationTool::createPatternCentric2() {
     //std::vector<double> temp22 = { 5.1387812804136901e-02, 4.1264447962786516e-01, 1.2561808957122409e+00 };
     //std::vector<double> temp23 = { 1.6484524415527824e-01, 7.4722399627735903e-01, 1.4310930451633073e+00 };
     //std::vector<std::vector<double> > t = { temp21,temp22,temp23 };
-    qDebug() << "rvec   " << endl;
-    qDebug() << this->calibResults.rvecs.size() << endl;
-    for (int i = 0; i < this->calibResults.rvecs.size(); i++) {
-        qDebug() << this->calibResults.rvecs[i].size().height <<endl<< this->calibResults.rvecs[i].size().width<< endl;
-        qDebug() <<this->calibResults.rvecs[i].at<double>(0, 0) << endl;
-        qDebug() << this->calibResults.rvecs[i].at<double>(1, 0) << endl;
-        // 创建 3D 球体
-        Qt3DExtras::QCuboidMesh* cubeMesh = new Qt3DExtras::QCuboidMesh();
-        cubeMesh->setXExtent(2.0);
-        cubeMesh->setYExtent(0.1);
-        cubeMesh->setZExtent(2.0);
-        // 创建 3D 实体组件
-        Qt3DCore::QEntity* cubeEntity = new Qt3DCore::QEntity(rootEntity);
-        cubeEntity->addComponent(cubeMesh);
-        cubeEntity->addComponent(material); // 使用透明材质渲染矩形的每个面
+    //qDebug() << "rvec   " << endl;
+    //qDebug() << this->calibResults.rvecs.size() << endl;
+    //for (int i = 0; i < this->calibResults.rvecs.size(); i++) {
+    //    qDebug() << this->calibResults.rvecs[i].size().height <<endl<< this->calibResults.rvecs[i].size().width<< endl;
+    //    qDebug() <<this->calibResults.rvecs[i].at<double>(0, 0) << endl;
+    //    qDebug() << this->calibResults.rvecs[i].at<double>(1, 0) << endl;
+    //    // 创建 3D 球体
+    //    Qt3DExtras::QCuboidMesh* cubeMesh = new Qt3DExtras::QCuboidMesh();
+    //    cubeMesh->setXExtent(2.0);
+    //    cubeMesh->setYExtent(0.1);
+    //    cubeMesh->setZExtent(2.0);
+    //    // 创建 3D 实体组件
+    //    Qt3DCore::QEntity* cubeEntity = new Qt3DCore::QEntity(rootEntity);
+    //    cubeEntity->addComponent(cubeMesh);
+    //    cubeEntity->addComponent(material); // 使用透明材质渲染矩形的每个面
 
-        // 创建 3D 变换组件
-        Qt3DCore::QTransform* transform = new Qt3DCore::QTransform();
-        cubeEntity->addComponent(transform);
+    //    // 创建 3D 变换组件
+    //    Qt3DCore::QTransform* transform = new Qt3DCore::QTransform();
+    //    cubeEntity->addComponent(transform);
 
-        // 旋转立方体
-        QVector3D rotationVector(
-            static_cast<float>(this->calibResults.rvecs[i].at<double>(0, 0)),
-            static_cast<float>(this->calibResults.rvecs[i].at<double>(1, 0)),
-            static_cast<float>(this->calibResults.rvecs[i].at<double>(2, 0))
-        );
-        QQuaternion rotation = QQuaternion::fromEulerAngles(rotationVector);
-        transform->setRotation(rotation);
+    //    // 旋转立方体
+    //    QVector3D rotationVector(
+    //        static_cast<float>(this->calibResults.rvecs[i].at<double>(0, 0)),
+    //        static_cast<float>(this->calibResults.rvecs[i].at<double>(1, 0)),
+    //        static_cast<float>(this->calibResults.rvecs[i].at<double>(2, 0))
+    //    );
+    //    QQuaternion rotation = QQuaternion::fromEulerAngles(rotationVector);
+    //    transform->setRotation(rotation);
 
-            
-        // 平移立方体
-        QVector3D translation(
-            static_cast<float>(this->calibResults.tvecs[i].at<double>(0, 0)),
-            static_cast<float>(this->calibResults.tvecs[i].at<double>(1, 0)),
-            static_cast<float>(this->calibResults.tvecs[i].at<double>(2, 0))
-        );
-        transform->setTranslation(translation);
-    }
-    // 创建 3D 实体
+    //        
+    //    // 平移立方体
+    //    QVector3D translation(
+    //        static_cast<float>(this->calibResults.tvecs[i].at<double>(0, 0)),
+    //        static_cast<float>(this->calibResults.tvecs[i].at<double>(1, 0)),
+    //        static_cast<float>(this->calibResults.tvecs[i].at<double>(2, 0))
+    //    );
+    //    transform->setTranslation(translation);
+    //}
+     //创建 3D 实体
     //Qt3DCore::QEntity* rootEntity = new Qt3DCore::QEntity();
 
-    //// 创建 3D 球体
-    //Qt3DExtras::QCuboidMesh* cubeMesh = new Qt3DExtras::QCuboidMesh();
-    //cubeMesh->setXExtent(2.0);
-    //cubeMesh->setYExtent(0.1);
-    //cubeMesh->setZExtent(2.0);
-    //// 创建 3D 实体组件
-    //Qt3DCore::QEntity* cubeEntity = new Qt3DCore::QEntity(rootEntity);
-    //cubeEntity->addComponent(cubeMesh);
-    //cubeEntity->addComponent(material);
+    // 创建 3D 球体
+    Qt3DExtras::QCuboidMesh* cubeMesh = new Qt3DExtras::QCuboidMesh();
+    cubeMesh->setXExtent(2.0);
+    cubeMesh->setYExtent(0.1);
+    cubeMesh->setZExtent(2.0);
+    // 创建 3D 实体组件
+    Qt3DCore::QEntity* cubeEntity = new Qt3DCore::QEntity(rootEntity);
+    cubeEntity->addComponent(cubeMesh);
+    cubeEntity->addComponent(material);
 
-    //// 创建 3D 变换组件
-    //Qt3DCore::QTransform* transform = new Qt3DCore::QTransform();
-    //cubeEntity->addComponent(transform);
-    //
+    // 创建 3D 变换组件
+    Qt3DCore::QTransform* transform = new Qt3DCore::QTransform();
+    cubeEntity->addComponent(transform);
+    
     // 旋转立方体
-    //QVector3D rotationVector(
-    //    static_cast<float>(3.7255595916094270e-01),
-    //    static_cast<float>(-3.2286315095976620e-01),
-    //    static_cast<float>(2.5998065119306002e+00)
-    //);
-    //QQuaternion rotation = QQuaternion::fromEulerAngles(rotationVector);
-    //transform->setRotation(rotation);
+    QVector3D rotationVector(
+        static_cast<float>(3.7255595916094270e-01),
+        static_cast<float>(-3.2286315095976620e-01),
+        static_cast<float>(2.5998065119306002e+00)
+    );
+    QQuaternion rotation = QQuaternion::fromEulerAngles(rotationVector);
+    transform->setRotation(rotation);
 
-    //    
-    //// 平移立方体
-    //QVector3D translation(
-    //    static_cast<float>(3.6222302556773556e-01),
-    //    static_cast<float>(1.8124125958992307e-01),
-    //    static_cast<float>(9.1641694205212221e-01)
-    //);
-    //transform->setTranslation(translation);
+        
+    // 平移立方体
+    QVector3D translation(
+        static_cast<float>(3.6222302556773556e-01),
+        static_cast<float>(1.8124125958992307e-01),
+        static_cast<float>(9.1641694205212221e-01)
+    );
+    transform->setTranslation(translation);
 
 
 
