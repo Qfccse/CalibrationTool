@@ -229,7 +229,7 @@ overflow: hidden;
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="Export">
+      <widget class="QPushButton" name="ExportBotton">
        <property name="toolTip">
         <string>export parameters</string>
        </property>
