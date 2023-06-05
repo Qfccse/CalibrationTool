@@ -66,7 +66,6 @@ private:
     void createLoading();
     void createBarChart(); // »­ÌõĞÎÍ¼
     void createPatternCentric();
-    void createPatternCentric2();
     void createAxis();
     void createPlane();
     void createScale(Qt3DRender::QCamera* camera);

@@ -33,7 +33,7 @@ CalibrationTool::CalibrationTool(QWidget* parent)
 
     createBarChart();
     //createPatternCentric();
-    createPatternCentric2();
+    //createPatternCentric2();
     createLoading();
 }
 
@@ -104,6 +104,10 @@ void CalibrationTool::onActionClear() {
         this->showUndistored = false;
         ui.changePicMode->setIcon(QIcon(":/picture/picture/distortedChess.png"));
         createBarChart();
+        for (int i = 0; i < this->cuboids.size(); i++) {
+            this->cuboids[i]->setEnabled(false);
+        }
+        this->cuboids.clear();
     }
 }
 
@@ -129,22 +133,17 @@ void CalibrationTool::onActionRemoveAndReCalibrate() {
             this->imageCorners.erase(this->imageCorners.begin() + index);
             this->imageNameList.erase(this->imageNameList.begin() + index);
             this->imageMatList.erase(this->imageMatList.begin() + index);
-            //this->undistortedImageList.erase(this->undistortedImageList.begin() + index);
             this->undistortedImageList.clear();
-            const Qt3DCore::QComponentVector components = this->rootEntity->components();
-
-            // 逐个移除所有的组件
-            for (int i = 0; i < components.size();i++) {
-                qDebug() << "iter at component " << i << endl;
-                if (i == index) {
-                    rootEntity->removeComponent(components[i]);
-                    break;
-                }
-            }
             this->showUndistored = false;
             ui.changePicMode->setIcon(QIcon(":/picture/picture/distortedChess.png"));
             this->calcSizeAndCalib();
             this->createBarChart();
+            for (int i = 0; i < this->cuboids.size(); i++) {
+                this->cuboids[i]->setEnabled(false);
+            }
+            this->cuboids.clear();
+            //this->createPatternCentric2();
+            this->addCuboidToCentric();
         }
     }
 }
@@ -309,7 +308,7 @@ void CalibrationTool::startCalibrate() {
             return;
         }
     }
-   // ui.loadingLabel->setVisible(true);
+    // ui.loadingLabel->setVisible(true);
     this->calcSizeAndCalib();
     this->clickToUndistort();
     //ui.loadingLabel->setVisible(false);
@@ -326,8 +325,16 @@ void CalibrationTool::startCalibrate() {
 
     // 画条形图和三维图
     createBarChart();
+    if (rootEntity != nullptr) {
+
+        delete rootEntity;
+    }
+    if (view3D != nullptr) {
+
+        delete view3D;
+    }
+    createPatternCentric();
     addCuboidToCentric();
-   // createPatternCentric2();
 }
 // 在窗口类的实现文件中实现槽函数来更新进度条
 void CalibrationTool::updateProgress(int value)
@@ -511,11 +518,50 @@ void CalibrationTool::changeShowUndistorted() {
 
 void CalibrationTool::clickToShow(int index) {
     clickedIndex = index;
-    qDebug() <<"total image num is" << this->imageCorners.size() << "  Clicked item text: " << index << "\n";
+    qDebug() << "total image num is" << this->imageCorners.size() << "  Clicked item text: " << index << "\n";
     vector<cv::Point2f> corners = this->imageCorners[index];
     QString fileName = this->imageNameList[index];
     cv::Mat flipedFrame;
+    qDebug() << "cube size " << this->cuboids.size() << endl;
+    if (!this->calibResults.rvecs.empty()) {
+        if (!this->imageCorners[index].empty()) {
+            int realIndex = 0;
+            for (int i = 0; i < this->imageCorners.size(); i++) {
+                if (!imageCorners[i].empty()) {
+                    if (realIndex == index) {
+                        break;
+                    }
+                    realIndex++;
+                }
+            }
+            qDebug() << "real show cube " << realIndex-- << endl;
+            for (int i = 0; i < this->cuboids.size(); i++) {
+                if (i == realIndex) {
+                    Qt3DCore::QEntity* cube = this->cuboids[i];
+                    Qt3DExtras::QPhongMaterial* cuboidMaterial = new Qt3DExtras::QPhongMaterial();
+                    cuboidMaterial->setAmbient(QColor(192, 192, 192, 0.1));
+                    cube->addComponent(cuboidMaterial);
+                }
+                else {
+                    Qt3DCore::QEntity* cube = this->cuboids[i];
+                    Qt3DExtras::QPhongMaterial* cuboidMaterial = new Qt3DExtras::QPhongMaterial();
+                    cuboidMaterial->setAmbient(QColor(102, 255, 255, 0.1));
+                    cube->addComponent(cuboidMaterial);
+                }
+            }
+        }
+        else {
+            for (int i = 0; i < this->cuboids.size(); i++) {
 
+                Qt3DCore::QEntity* cube = this->cuboids[i];
+                Qt3DExtras::QPhongMaterial* cuboidMaterial = new Qt3DExtras::QPhongMaterial();
+                cuboidMaterial->setAmbient(QColor(102, 255, 255, 0.1));
+                cube->addComponent(cuboidMaterial);
+
+            }
+        }
+
+    }
     // 获取点击的图片
     if (!this->showUndistored) {
         flipedFrame = this->imageMatList[index];
@@ -525,7 +571,7 @@ void CalibrationTool::clickToShow(int index) {
     {
         flipedFrame = this->undistortedImageList[index];
     }
-    
+
     // 将抓取到的帧，转换为QImage格式。QImage::Format_RGB888不同的摄像头用不同的格式。
     QImage image(flipedFrame.data, flipedFrame.cols, flipedFrame.rows, flipedFrame.step, QImage::Format_RGB888);
     //创建显示容器
@@ -589,7 +635,6 @@ void CalibrationTool::createBarChart() {
             else {
                 qDebug() << "empty" << endl;
             }
-              
         }
         // 执行点击事件的处理逻辑
         });
@@ -713,166 +758,6 @@ void CalibrationTool::createBarChart() {
 /***************************************
 *** Qt中使用Qt3D画三维场景图 ***
 *****************************************/
-void CalibrationTool::createPatternCentric() {
-
-    //// 每张图片的外参
-    //vector<cv::Mat> R;
-    //vector<cv::Mat> t;
-    //// 畸变系数
-    //double D_[] = { -3.4351280917484162e-01, 1.5909766895881644e-01, -1.2375087184036587e-06, 7.4996411884060586e-04, -4.1226886540150574e-02 };
-    //cv::Mat D = cv::Mat(1, 5, CV_64F, D_); // 创建一个空的 double 类型矩阵
-
-    //// 定义旋转矩阵 R 和三维向量 v
-    //cv::Mat R_ = (cv::Mat_<double>(3, 3) << 1, 0, 0, 0, 1, 0, 0, 0, 1); // 示例旋转矩阵
-    //cv::Mat v_ = (cv::Mat_<double>(3, 1) << 1, 2, 3); // 示例三维向量
-
-    //// 计算三维坐标
-    //cv::Mat result = R_ * v_;
-
-
-    // 展示图表
-   QGraphicsView* transformView = ui.transformGram; // histogram 是之前在 UI 文件中定义的 QGraphicsView 组件
-   QGraphicsScene* scene = new QGraphicsScene(transformView); // 创建一个场景对象，关联到 histogramView 组件
-
-    // Root entity
-   
-    // 3D Window
-    Qt3DExtras::Qt3DWindow* view = new Qt3DExtras::Qt3DWindow();
-    view->defaultFrameGraph()->setClearColor(QColor(QRgb(0xffffffff)));
-    QWidget* container = QWidget::createWindowContainer(view);
-    QSize screenSize = view->screen()->size();
-    container->setMinimumSize(QSize(200, 100));
-    container->setMaximumSize(screenSize);
-    Qt3DCore::QEntity* rootEntity = new Qt3DCore::QEntity();
-    view->setRootEntity(rootEntity);
-
-    QWidget* widget = new QWidget;
-    // layout
-    QHBoxLayout* hLayout = new QHBoxLayout(widget);
-    QVBoxLayout* vLayout = new QVBoxLayout();
-    vLayout->setAlignment(Qt::AlignTop);
-    hLayout->addWidget(container, 1);
-    hLayout->addLayout(vLayout);
-    widget->setWindowTitle(QStringLiteral("Basic shapes"));
-
-    // Camera
-    Qt3DRender::QCamera* cameraEntity = view->camera();
-    // For camera controls
-    Qt3DExtras::QFirstPersonCameraController* camController = new Qt3DExtras::QFirstPersonCameraController(rootEntity);
-    cameraEntity->lens()->setPerspectiveProjection(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
-    cameraEntity->setPosition(QVector3D(30.0f, 30.0f, 30.0f));
-    cameraEntity->setUpVector(QVector3D(0, 1, 0));
-    cameraEntity->setViewCenter(QVector3D(0, 0, 0));
-    camController->setCamera(cameraEntity);
-
-    // Light
-    Qt3DCore::QEntity* lightEntity = new Qt3DCore::QEntity(rootEntity);
-    Qt3DRender::QPointLight* light = new Qt3DRender::QPointLight(lightEntity);
-    light->setColor("white");
-    light->setIntensity(1);
-    lightEntity->addComponent(light);
-    Qt3DCore::QTransform* lightTransform = new Qt3DCore::QTransform(lightEntity);
-    lightTransform->setTranslation(cameraEntity->position());
-    lightEntity->addComponent(lightTransform);
-
-
-    // Cuboid mesh
-    Qt3DExtras::QCuboidMesh* cuboid = new Qt3DExtras::QCuboidMesh();
-    // CuboidMesh Transform
-    Qt3DCore::QTransform* cuboidTransform = new Qt3DCore::QTransform();
-    cuboidTransform->setScale(1.0f);
-    cuboidTransform->setTranslation(QVector3D(10.0f, 10.0f, 10.0f));
-    // CuboidMesh Material
-    Qt3DExtras::QPhongMaterial* cuboidMaterial = new Qt3DExtras::QPhongMaterial();
-    cuboidMaterial->setDiffuse(QColor(Qt::black));
-    // Cuboid
-    Qt3DCore::QEntity* cuboidEntity = new Qt3DCore::QEntity(rootEntity);
-    cuboidEntity->addComponent(cuboid);
-    cuboidEntity->addComponent(cuboidMaterial);
-    cuboidEntity->addComponent(cuboidTransform);
-
-    // Plane mesh
-    Qt3DExtras::QPlaneMesh* planeMesh = new Qt3DExtras::QPlaneMesh();
-    planeMesh->setWidth(2);
-    planeMesh->setHeight(2);
-    // Plane transform
-    Qt3DCore::QTransform* planeTransform = new Qt3DCore::QTransform();
-    planeTransform->setScale(5.0f);
-    planeTransform->setTranslation(QVector3D(10.0f, 0.0f, 10.0f));
-    // Plane material
-    Qt3DExtras::QPhongMaterial* planeMaterial = new Qt3DExtras::QPhongMaterial();
-    planeMaterial->setDiffuse(QColor(65, 205, 82));
-    // Plane
-    Qt3DCore::QEntity* planeEntity = new Qt3DCore::QEntity(rootEntity);
-    planeEntity->addComponent(planeMesh);
-    planeEntity->addComponent(planeMaterial);
-    planeEntity->addComponent(planeTransform);
-
-    // (x→,y↑,z●)
-    // Axis entity
-    Qt3DCore::QEntity* axisEntity = new Qt3DCore::QEntity(rootEntity);
-
-    // X-axis
-    // X-axis mesh
-    Qt3DExtras::QCylinderMesh* xAxisMesh = new Qt3DExtras::QCylinderMesh();
-    xAxisMesh->setRadius(0.05f);
-    xAxisMesh->setLength(20.0f);
-    // X-axis material
-    Qt3DExtras::QPhongMaterial* xAxisMaterial = new Qt3DExtras::QPhongMaterial();
-    xAxisMaterial->setAmbient(Qt::red); //color
-    // X-axis transform
-    Qt3DCore::QTransform* xAxisTransform = new Qt3DCore::QTransform();
-    xAxisTransform->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), 90.0f));
-    xAxisTransform->setTranslation(QVector3D(10.0f, 0.0f, 0.0f));
-    // X-axis entity
-    Qt3DCore::QEntity* xAxisEntity = new Qt3DCore::QEntity(axisEntity);
-    xAxisEntity->addComponent(xAxisMesh);
-    xAxisEntity->addComponent(xAxisMaterial);
-    xAxisEntity->addComponent(xAxisTransform);
-
-    // Y-axis
-    // Y-axis mesh
-    Qt3DExtras::QCylinderMesh* yAxisMesh = new Qt3DExtras::QCylinderMesh();
-    yAxisMesh->setRadius(0.05f);
-    yAxisMesh->setLength(20.0f);
-    // Y-axis material
-    Qt3DExtras::QPhongMaterial* zXxisMaterial = new Qt3DExtras::QPhongMaterial();
-    zXxisMaterial->setAmbient(Qt::yellow); //color
-    // Y-axis transform
-    Qt3DCore::QTransform* yAxisTransform = new Qt3DCore::QTransform();
-    yAxisTransform->setTranslation(QVector3D(0.0f, 10.0f, 0.0f));
-    // Y-axis entity
-    Qt3DCore::QEntity* yAxisEntity = new Qt3DCore::QEntity(axisEntity);
-    yAxisEntity->addComponent(yAxisMesh);
-    yAxisEntity->addComponent(zXxisMaterial);
-    yAxisEntity->addComponent(yAxisTransform);
-
-    // Z-axis
-    // Z-axis mesh
-    Qt3DExtras::QCylinderMesh* zAxisMesh = new Qt3DExtras::QCylinderMesh();
-    zAxisMesh->setRadius(0.05f);
-    zAxisMesh->setLength(20.0f);
-    // Z-axis material
-    Qt3DExtras::QPhongMaterial* zAxisMaterial = new Qt3DExtras::QPhongMaterial();
-    zAxisMaterial->setAmbient(Qt::blue); //color
-    // Z-axis transform
-    Qt3DCore::QTransform* zAxisTransform = new Qt3DCore::QTransform();
-    zAxisTransform->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), -90.0f));
-    zAxisTransform->setTranslation(QVector3D(0.0f, 0.0f, 10.0f));
-    // Z-axis entity
-    Qt3DCore::QEntity* zAxisEntity = new Qt3DCore::QEntity(axisEntity);
-    zAxisEntity->addComponent(zAxisMesh);
-    zAxisEntity->addComponent(zAxisMaterial);
-    zAxisEntity->addComponent(zAxisTransform);
-
-    // Show window
-    widget->show();
-    widget->resize(500, 500);
-
-    scene->addWidget(widget);
-}
-
-
 void CalibrationTool::createAxis() {
     // 创建坐标轴 (x→,y↑,z●)
     // Axis entity
@@ -1039,9 +924,9 @@ void CalibrationTool::createScale(Qt3DRender::QCamera* camera) {
 Qt3DCore::QEntity* CalibrationTool::createCuboid(QVector3D transformMatrix, QVector3D rotationMatrix) {
     // Cuboid mesh
     Qt3DExtras::QCuboidMesh* cuboid = new Qt3DExtras::QCuboidMesh();
-    cuboid->setXExtent(5.0);
+    cuboid->setXExtent(4.0);
     cuboid->setZExtent(0.1);
-    cuboid->setYExtent(5.0);
+    cuboid->setYExtent(4.0);
     // CuboidMesh Transform
     Qt3DCore::QTransform* cuboidTransform = new Qt3DCore::QTransform();
     cuboidTransform->setScale(2.0f);
@@ -1049,7 +934,8 @@ Qt3DCore::QEntity* CalibrationTool::createCuboid(QVector3D transformMatrix, QVec
     cuboidTransform->setTranslation(transformMatrix);
     // CuboidMesh Material
     Qt3DExtras::QPhongMaterial* cuboidMaterial = new Qt3DExtras::QPhongMaterial();
-    cuboidMaterial->setDiffuse(QColor(210, 255, 255));
+    cuboidMaterial->setAmbient(QColor(102, 255, 255, 0.1));
+    //cuboidMaterial->setDiffuse(QColor(102, 255, 255));
     // Cuboid entity
     Qt3DCore::QEntity* cuboidEntity = new Qt3DCore::QEntity(this->rootEntity);
     cuboidEntity->addComponent(cuboid);
@@ -1059,7 +945,7 @@ Qt3DCore::QEntity* CalibrationTool::createCuboid(QVector3D transformMatrix, QVec
     return cuboidEntity;
 }
 
-void CalibrationTool::createPatternCentric2() {
+void CalibrationTool::createPatternCentric() {
     // 创建子窗口并设置大小
     QWidget* childWidget = new QWidget(this);
     childWidget->setFixedSize(250, 250);
@@ -1067,7 +953,7 @@ void CalibrationTool::createPatternCentric2() {
     view3D = new Qt3DExtras::Qt3DWindow();
     view3D->defaultFrameGraph()->setClearColor(Qt::white);
     QWidget* container = QWidget::createWindowContainer(view3D, childWidget);
-    container->setGeometry(0, 0, GRAPHIC_VIEW_WIDTH- 2, GRAPHIC_VIEW_HEIGHT - 6);
+    container->setGeometry(0, 0, GRAPHIC_VIEW_WIDTH - 2, GRAPHIC_VIEW_HEIGHT - 6);
     // 创建 3D 实体
     rootEntity = new Qt3DCore::QEntity();
     // 创建 3D 相机
@@ -1084,15 +970,16 @@ void CalibrationTool::createPatternCentric2() {
     cameraController->setCamera(camera);
 
     // Light
-    Qt3DCore::QEntity* lightEntity = new Qt3DCore::QEntity(rootEntity);
-    Qt3DRender::QPointLight* light = new Qt3DRender::QPointLight(lightEntity);
-    light->setColor("white");
-    light->setIntensity(1);
-    lightEntity->addComponent(light);
-    Qt3DCore::QTransform* lightTransform = new Qt3DCore::QTransform(lightEntity);
-    lightTransform->setTranslation(camera->position());
-    //lightTransform->setTranslation(QVector3D(0, 50, 0));
-    lightEntity->addComponent(lightTransform);
+    //Qt3DCore::QEntity* lightEntity = new Qt3DCore::QEntity(rootEntity);
+    //Qt3DRender::QPointLight* light = new Qt3DRender::QPointLight(lightEntity);
+    //light->setColor("white");
+    //light->setIntensity(1);
+
+    //lightEntity->addComponent(light);
+    //Qt3DCore::QTransform* lightTransform = new Qt3DCore::QTransform(lightEntity);
+    //lightTransform->setTranslation(camera->position());
+    ////lightTransform->setTranslation(QVector3D(0, 50, 0));
+    //lightEntity->addComponent(lightTransform);
 
     // 设置根实体
     view3D->setRootEntity(rootEntity);
@@ -1116,12 +1003,9 @@ void CalibrationTool::createPatternCentric2() {
 
 void CalibrationTool::addCuboidToCentric() {
     // 通过遍历所给的位置向量，创建多个
-    qDebug() << "rvec   " << endl;
-    qDebug() << this->calibResults.rvecs.size() << endl;
+   // qDebug() << "rvec   " << endl;
+   // qDebug() << this->calibResults.rvecs.size() << endl;
     for (int i = 0; i < this->calibResults.rvecs.size(); i++) {
-        qDebug() << this->calibResults.rvecs[i].size().height << endl << this->calibResults.rvecs[i].size().width << endl;
-        qDebug() << this->calibResults.rvecs[i].at<double>(0, 0) << endl;
-        qDebug() << this->calibResults.rvecs[i].at<double>(1, 0) << endl;
         // 平移立方体
         QVector3D translation(
             static_cast<float>(this->calibResults.tvecs[i].at<double>(0, 0) * TRANSLATION_BASE_SCALE),
