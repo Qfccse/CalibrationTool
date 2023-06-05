@@ -38,7 +38,7 @@ CalibrationTool::CalibrationTool(QWidget* parent)
 
     createBarChart();
     //createPatternCentric();
-    createPatternCentric2();
+   //createPatternCentric2();
     createLoading();
 }
 
@@ -857,31 +857,6 @@ void CalibrationTool::createPatternCentric() {
 }
 
 
-
-Qt3DCore::QEntity* createCuboid(Qt3DCore::QEntity* rootEntity, QVector3D transform, const QVector3D& axis, float angle) {
-    // Cuboid mesh
-    Qt3DExtras::QCuboidMesh* cuboid = new Qt3DExtras::QCuboidMesh();
-    // CuboidMesh Transform
-    Qt3DCore::QTransform* cuboidTransform = new Qt3DCore::QTransform();
-    cuboidTransform->setScale(2.0f);
-    cuboidTransform->setRotation(QQuaternion::fromAxisAndAngle(axis, angle));
-    cuboidTransform->setTranslation(transform);
-    // CuboidMesh Material
-    Qt3DExtras::QPhongMaterial* cuboidMaterial = new Qt3DExtras::QPhongMaterial();
-    cuboidMaterial->setDiffuse(QColor(210, 255, 255));
-    // Cuboid entity
-    Qt3DCore::QEntity* cuboidEntity = new Qt3DCore::QEntity(rootEntity);
-    cuboidEntity->addComponent(cuboid);
-    cuboidEntity->addComponent(cuboidMaterial);
-    cuboidEntity->addComponent(cuboidTransform);
-
-    // Task:
-    // 1. transparent
-    // 2. border
-
-    return cuboidEntity;
-}
-
 void createAxis(Qt3DCore::QEntity* rootEntity) {
     // 创建坐标轴 (x→,y↑,z●)
     // Axis entity
@@ -1032,17 +1007,6 @@ void createScale(Qt3DCore::QEntity* rootEntity, Qt3DRender::QCamera* camera) {
         transforms[i]->setTranslation(transforms_[i]);
         transforms[i]->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(0, 1, 0), 90.0f));
 
-        // 另一种刻度显示方式
-        //if (i <= 2) {
-        //    transforms[i]->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), -90.0f));
-        //}
-        //else if (i >= 3 && i <= 7) {
-        //    transforms[i]->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(0, 1, 0), 90.0f));
-        //}
-        //else {
-        //    transforms[i]->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), -90.0f));
-        //}
-
         texts.push_back(new Qt3DExtras::QText2DEntity(rootEntity));
         texts[i]->setFont(QFont("Calibri"));
         texts[i]->setHeight(20);
@@ -1051,18 +1015,35 @@ void createScale(Qt3DCore::QEntity* rootEntity, Qt3DRender::QCamera* camera) {
         texts[i]->setColor(Qt::black);
         texts[i]->addComponent(transforms[i]);
 
-        //// 连接相机位置变化信号:使得刻度始终面向相机
-        //QObject::connect(camera, &Qt3DRender::QCamera::positionChanged, [i, texts, transforms, camera]() {
-        //    QVector3D cameraPos = camera->position();
-        //    QVector3D objectPos = transforms[i]->translation();
-        //    QVector3D upVector(0, 1, 0);
-        //    transforms[i]->setRotation(QQuaternion::fromDirection(objectPos - cameraPos, upVector));
-        //    });
     }
 
     // Reference: https://github.com/Nonmant/Qt3DExtras-QText2DEntity-Example/blob/master/main.cpp
 }
 
+
+
+Qt3DCore::QEntity* createCuboid(Qt3DCore::QEntity* rootEntity, QVector3D transformMatrix, QVector3D rotationMatrix) {
+    // Cuboid mesh
+    Qt3DExtras::QCuboidMesh* cuboid = new Qt3DExtras::QCuboidMesh();
+    cuboid->setXExtent(5.0);
+    cuboid->setZExtent(0.1);
+    cuboid->setYExtent(5.0);
+    // CuboidMesh Transform
+    Qt3DCore::QTransform* cuboidTransform = new Qt3DCore::QTransform();
+    cuboidTransform->setScale(2.0f);
+    cuboidTransform->setRotation(QQuaternion::fromEulerAngles(rotationMatrix));
+    cuboidTransform->setTranslation(transformMatrix);
+    // CuboidMesh Material
+    Qt3DExtras::QPhongMaterial* cuboidMaterial = new Qt3DExtras::QPhongMaterial();
+    cuboidMaterial->setDiffuse(QColor(210, 255, 255));
+    // Cuboid entity
+    Qt3DCore::QEntity* cuboidEntity = new Qt3DCore::QEntity(rootEntity);
+    cuboidEntity->addComponent(cuboid);
+    cuboidEntity->addComponent(cuboidMaterial);
+    cuboidEntity->addComponent(cuboidTransform);
+
+    return cuboidEntity;
+}
 
 void CalibrationTool::createPatternCentric2() {
     // 创建子窗口并设置大小
@@ -1107,90 +1088,67 @@ void CalibrationTool::createPatternCentric2() {
     //std::vector<double> temp22 = { 5.1387812804136901e-02, 4.1264447962786516e-01, 1.2561808957122409e+00 };
     //std::vector<double> temp23 = { 1.6484524415527824e-01, 7.4722399627735903e-01, 1.4310930451633073e+00 };
     //std::vector<std::vector<double> > t = { temp21,temp22,temp23 };
-    //qDebug() << "rvec   " << endl;
-    //qDebug() << this->calibResults.rvecs.size() << endl;
-    //for (int i = 0; i < this->calibResults.rvecs.size(); i++) {
-    //    qDebug() << this->calibResults.rvecs[i].size().height <<endl<< this->calibResults.rvecs[i].size().width<< endl;
-    //    qDebug() <<this->calibResults.rvecs[i].at<double>(0, 0) << endl;
-    //    qDebug() << this->calibResults.rvecs[i].at<double>(1, 0) << endl;
-    //    // 创建 3D 球体
-    //    Qt3DExtras::QCuboidMesh* cubeMesh = new Qt3DExtras::QCuboidMesh();
-    //    cubeMesh->setXExtent(2.0);
-    //    cubeMesh->setYExtent(0.1);
-    //    cubeMesh->setZExtent(2.0);
-    //    // 创建 3D 实体组件
-    //    Qt3DCore::QEntity* cubeEntity = new Qt3DCore::QEntity(rootEntity);
-    //    cubeEntity->addComponent(cubeMesh);
-    //    cubeEntity->addComponent(material); // 使用透明材质渲染矩形的每个面
-
-    //    // 创建 3D 变换组件
-    //    Qt3DCore::QTransform* transform = new Qt3DCore::QTransform();
-    //    cubeEntity->addComponent(transform);
-
-    //    // 旋转立方体
-    //    QVector3D rotationVector(
-    //        static_cast<float>(this->calibResults.rvecs[i].at<double>(0, 0)),
-    //        static_cast<float>(this->calibResults.rvecs[i].at<double>(1, 0)),
-    //        static_cast<float>(this->calibResults.rvecs[i].at<double>(2, 0))
-    //    );
-    //    QQuaternion rotation = QQuaternion::fromEulerAngles(rotationVector);
-    //    transform->setRotation(rotation);
-
-    //        
-    //    // 平移立方体
-    //    QVector3D translation(
-    //        static_cast<float>(this->calibResults.tvecs[i].at<double>(0, 0)),
-    //        static_cast<float>(this->calibResults.tvecs[i].at<double>(1, 0)),
-    //        static_cast<float>(this->calibResults.tvecs[i].at<double>(2, 0))
-    //    );
-    //    transform->setTranslation(translation);
-    //}
-     //创建 3D 实体
-    //Qt3DCore::QEntity* rootEntity = new Qt3DCore::QEntity();
-
-    // 创建 3D 球体
-    Qt3DExtras::QCuboidMesh* cubeMesh = new Qt3DExtras::QCuboidMesh();
-    cubeMesh->setXExtent(2.0);
-    cubeMesh->setYExtent(0.1);
-    cubeMesh->setZExtent(2.0);
-    // 创建 3D 实体组件
-    Qt3DCore::QEntity* cubeEntity = new Qt3DCore::QEntity(rootEntity);
-    cubeEntity->addComponent(cubeMesh);
-    cubeEntity->addComponent(material);
-
-    // 创建 3D 变换组件
-    Qt3DCore::QTransform* transform = new Qt3DCore::QTransform();
-    cubeEntity->addComponent(transform);
+    // 
     
-    // 旋转立方体
-    QVector3D rotationVector(
-        static_cast<float>(3.7255595916094270e-01),
-        static_cast<float>(-3.2286315095976620e-01),
-        static_cast<float>(2.5998065119306002e+00)
-    );
-    QQuaternion rotation = QQuaternion::fromEulerAngles(rotationVector);
-    transform->setRotation(rotation);
 
-        
-    // 平移立方体
-    QVector3D translation(
-        static_cast<float>(3.6222302556773556e-01),
-        static_cast<float>(1.8124125958992307e-01),
-        static_cast<float>(9.1641694205212221e-01)
-    );
-    transform->setTranslation(translation);
+
+    //// 创建 3D 立方体
+    //Qt3DExtras::QCuboidMesh* cubeMesh = new Qt3DExtras::QCuboidMesh();
+    //cubeMesh->setXExtent(20.0);
+    //cubeMesh->setYExtent(0.1);
+    //cubeMesh->setZExtent(20.0);
+    //// 创建 3D 实体组件
+    //Qt3DCore::QEntity* cubeEntity = new Qt3DCore::QEntity(rootEntity);
+    //cubeEntity->addComponent(cubeMesh);
+    //cubeEntity->addComponent(material);
+
+    //// 创建 3D 变换组件
+    //Qt3DCore::QTransform* transform = new Qt3DCore::QTransform();
+    //cubeEntity->addComponent(transform);
+    //
+    //// 旋转立方体
+    //QVector3D rotationVector(
+    //    static_cast<float>(3.7255595916094270e-01),
+    //    static_cast<float>(-3.2286315095976620e-01),
+    //    static_cast<float>(2.5998065119306002e+00)
+    //);
+    //QQuaternion rotation = QQuaternion::fromEulerAngles(rotationVector);
+    //transform->setRotation(rotation);
+
+    //    
+    //// 平移立方体
+    //QVector3D translation(
+    //    static_cast<float>(3.6222302556773556e-01),
+    //    static_cast<float>(1.8124125958992307e-01),
+    //    static_cast<float>(9.1641694205212221e-01)
+    //);
+    //transform->setTranslation(translation);
 
 
 
     // 创建 3D 相机
     Qt3DRender::QCamera* camera = view3D->camera();
-    camera->lens()->setPerspectiveProjection(45.0f, 1.0f, 0.1f, 100.0f);
-    camera->setPosition(QVector3D(0, 0, 5));
+    camera->lens()->setPerspectiveProjection(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
+    camera->setPosition(QVector3D(35.0f, 18.0f, 30.0f));
+    camera->setUpVector(QVector3D(0, 1, 0));
     camera->setViewCenter(QVector3D(0, 0, 0));
 
     // 创建 3D 相机控制器
     Qt3DExtras::QOrbitCameraController* cameraController = new Qt3DExtras::QOrbitCameraController(rootEntity);
+    cameraController->setLinearSpeed(100.0f);  // 设置相机的线性速度
+    cameraController->setLookSpeed(100.0f);  // 设置相机的旋转速度
     cameraController->setCamera(camera);
+
+    // Light
+    Qt3DCore::QEntity* lightEntity = new Qt3DCore::QEntity(rootEntity);
+    Qt3DRender::QPointLight* light = new Qt3DRender::QPointLight(lightEntity);
+    light->setColor("white");
+    light->setIntensity(1);
+    lightEntity->addComponent(light);
+    Qt3DCore::QTransform* lightTransform = new Qt3DCore::QTransform(lightEntity);
+    lightTransform->setTranslation(camera->position());
+    //lightTransform->setTranslation(QVector3D(0, 50, 0));
+    lightEntity->addComponent(lightTransform);
 
 
 
@@ -1214,9 +1172,36 @@ void CalibrationTool::createPatternCentric2() {
     createScale(rootEntity, camera);
 
     // 创建 相机位姿
-    //vector<Qt3DCore::QEntity*> cuboids;
+    vector<Qt3DCore::QEntity*> cuboids;
     // 通过遍历所给的位置向量，创建多个
-    //cuboids.push_back(createCuboid(rootEntity, QVector3D(0.0f, 10.0f, 0.0f), QVector3D(0, 1, 1), 90));
+   // cuboids.push_back(createCuboid(rootEntity));
+    qDebug() << "rvec   " << endl;
+    qDebug() << this->calibResults.rvecs.size() << endl;
+    for (int i = 0; i < this->calibResults.rvecs.size(); i++) {
+        qDebug() << this->calibResults.rvecs[i].size().height << endl << this->calibResults.rvecs[i].size().width << endl;
+        qDebug() << this->calibResults.rvecs[i].at<double>(0, 0) << endl;
+        qDebug() << this->calibResults.rvecs[i].at<double>(1, 0) << endl;
+        // 平移立方体
+        QVector3D translation(
+            static_cast<float>(this->calibResults.tvecs[i].at<double>(0, 0)),
+            static_cast<float>(this->calibResults.tvecs[i].at<double>(1, 0) + TRANSLATION_BASE_OFFSET),
+            static_cast<float>(this->calibResults.tvecs[i].at<double>(2, 0))
+        );
+
+        // 旋转立方体
+        QVector3D rotationVector(
+            static_cast<float>(this->calibResults.rvecs[i].at<double>(0, 0) * ROTATION_BASE_SCALE + ROTATION_BASE_X_TRANSLATION),
+            static_cast<float>(this->calibResults.rvecs[i].at<double>(1, 0) * ROTATION_BASE_SCALE),
+            static_cast<float>(this->calibResults.rvecs[i].at<double>(2, 0) * ROTATION_BASE_SCALE)
+        );
+        //QQuaternion rotation = QQuaternion::fromEulerAngles(rotationVector);
+        cuboids.push_back(createCuboid(rootEntity, translation, rotationVector));
+
+    }
+    /*cuboids.push_back(createCuboid(rootEntity, 
+        QVector3D(3.6222302556773556e-01, 1.8124125958992307e-01 + 10, 9.1641694205212221e-01),
+        QVector3D(3.7255595916094270e-01*10 +90 , -3.2286315095976620e-01*10, 2.5998065119306002e+00*10)));*/
+
 }
 
 void CalibrationTool::calculateAxisAngle() {

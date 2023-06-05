@@ -22,6 +22,10 @@ using namespace std;
 #define CHART_EXPEND 55
 #define CHART_FONT_SIZE 8
 
+#define TRANSLATION_BASE_OFFSET 10
+#define ROTATION_BASE_SCALE 10
+#define ROTATION_BASE_X_TRANSLATION 90
+
 #define NORMAL_CAM 1
 #define FISH_EYE_CAM 2
 #define BOARD_SIZE Size(9,6)
