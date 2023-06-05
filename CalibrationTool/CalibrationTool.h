@@ -15,6 +15,10 @@
 #include <QProgressDialog>
 #include <QAction>
 #include <QDateTime>
+#include <QtCharts>
+#include <Qt3DCore>
+#include <Qt3DRender>
+#include <Qt3DExtras>
 #include "Const.h"
 
 class CalibrationTool : public QMainWindow
@@ -63,9 +67,11 @@ private:
     void createBarChart(); // 画条形图
     void createPatternCentric();
     void createPatternCentric2();
-
-
-    void calculateAxisAngle();
+    void createAxis();
+    void createPlane();
+    void createScale(Qt3DRender::QCamera* camera);
+    Qt3DCore::QEntity* createCuboid(QVector3D transformMatrix, QVector3D rotationMatrix);
+    void addCuboidToCentric();
 private:
     //弹出选择文件对话框
     void selectFile();
@@ -95,4 +101,9 @@ private:
     vector<QString> imageNameList;
     vector<cv::Mat> imageMatList;
     vector<cv::Mat> undistortedImageList;
+    Qt3DExtras::Qt3DWindow* view3D;
+    // 3D 实体
+    Qt3DCore::QEntity* rootEntity;
+    // 创建 相机位姿
+    vector<Qt3DCore::QEntity*> cuboids;
 };

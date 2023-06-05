@@ -2,11 +2,6 @@
 #include "Const.h"
 #include "Calibrate.h"
 
-#include <QtCharts>
-#include <Qt3DCore>
-#include <Qt3DRender>
-#include <Qt3DExtras>
-
 QT_CHARTS_USE_NAMESPACE
 
 CalibrationTool::CalibrationTool(QWidget* parent)
@@ -38,7 +33,7 @@ CalibrationTool::CalibrationTool(QWidget* parent)
 
     createBarChart();
     //createPatternCentric();
-   //createPatternCentric2();
+    createPatternCentric2();
     createLoading();
 }
 
@@ -99,7 +94,15 @@ void CalibrationTool::onActionClear() {
 
         popMenu_In_ListWidget_->addAction(action_Delete_In_ListWidget_);
         popMenu_In_ListWidget_->addAction(action_Clear_In_ListWidget_);
+        const Qt3DCore::QComponentVector components = this->rootEntity->components();
 
+        // 逐个移除所有的组件
+        for (Qt3DCore::QComponent* component : components) {
+            qDebug() << "iter all component " << endl;
+            rootEntity->removeComponent(component);
+        }
+        this->showUndistored = false;
+        ui.changePicMode->setIcon(QIcon(":/picture/picture/distortedChess.png"));
         createBarChart();
     }
 }
@@ -128,8 +131,20 @@ void CalibrationTool::onActionRemoveAndReCalibrate() {
             this->imageMatList.erase(this->imageMatList.begin() + index);
             //this->undistortedImageList.erase(this->undistortedImageList.begin() + index);
             this->undistortedImageList.clear();
+            const Qt3DCore::QComponentVector components = this->rootEntity->components();
 
+            // 逐个移除所有的组件
+            for (int i = 0; i < components.size();i++) {
+                qDebug() << "iter at component " << i << endl;
+                if (i == index) {
+                    rootEntity->removeComponent(components[i]);
+                    break;
+                }
+            }
+            this->showUndistored = false;
+            ui.changePicMode->setIcon(QIcon(":/picture/picture/distortedChess.png"));
             this->calcSizeAndCalib();
+            this->createBarChart();
         }
     }
 }
@@ -311,7 +326,8 @@ void CalibrationTool::startCalibrate() {
 
     // 画条形图和三维图
     createBarChart();
-    createPatternCentric2();
+    addCuboidToCentric();
+   // createPatternCentric2();
 }
 // 在窗口类的实现文件中实现槽函数来更新进度条
 void CalibrationTool::updateProgress(int value)
@@ -857,7 +873,7 @@ void CalibrationTool::createPatternCentric() {
 }
 
 
-void createAxis(Qt3DCore::QEntity* rootEntity) {
+void CalibrationTool::createAxis() {
     // 创建坐标轴 (x→,y↑,z●)
     // Axis entity
     Qt3DCore::QEntity* axisEntity = new Qt3DCore::QEntity(rootEntity);
@@ -964,7 +980,7 @@ void createAxis(Qt3DCore::QEntity* rootEntity) {
 
 }
 
-void createPlane(Qt3DCore::QEntity* rootEntity) {
+void CalibrationTool::createPlane() {
     // Plane mesh
     Qt3DExtras::QPlaneMesh* planeMesh = new Qt3DExtras::QPlaneMesh();
     planeMesh->setWidth(1);
@@ -983,7 +999,7 @@ void createPlane(Qt3DCore::QEntity* rootEntity) {
     planeEntity->addComponent(planeTransform);
 }
 
-void createScale(Qt3DCore::QEntity* rootEntity, Qt3DRender::QCamera* camera) {
+void CalibrationTool::createScale(Qt3DRender::QCamera* camera) {
 
     vector<Qt3DCore::QTransform*> transforms;
     vector<QVector3D> transforms_ = {
@@ -1020,9 +1036,7 @@ void createScale(Qt3DCore::QEntity* rootEntity, Qt3DRender::QCamera* camera) {
     // Reference: https://github.com/Nonmant/Qt3DExtras-QText2DEntity-Example/blob/master/main.cpp
 }
 
-
-
-Qt3DCore::QEntity* createCuboid(Qt3DCore::QEntity* rootEntity, QVector3D transformMatrix, QVector3D rotationMatrix) {
+Qt3DCore::QEntity* CalibrationTool::createCuboid(QVector3D transformMatrix, QVector3D rotationMatrix) {
     // Cuboid mesh
     Qt3DExtras::QCuboidMesh* cuboid = new Qt3DExtras::QCuboidMesh();
     cuboid->setXExtent(5.0);
@@ -1037,7 +1051,7 @@ Qt3DCore::QEntity* createCuboid(Qt3DCore::QEntity* rootEntity, QVector3D transfo
     Qt3DExtras::QPhongMaterial* cuboidMaterial = new Qt3DExtras::QPhongMaterial();
     cuboidMaterial->setDiffuse(QColor(210, 255, 255));
     // Cuboid entity
-    Qt3DCore::QEntity* cuboidEntity = new Qt3DCore::QEntity(rootEntity);
+    Qt3DCore::QEntity* cuboidEntity = new Qt3DCore::QEntity(this->rootEntity);
     cuboidEntity->addComponent(cuboid);
     cuboidEntity->addComponent(cuboidMaterial);
     cuboidEntity->addComponent(cuboidTransform);
@@ -1049,83 +1063,13 @@ void CalibrationTool::createPatternCentric2() {
     // 创建子窗口并设置大小
     QWidget* childWidget = new QWidget(this);
     childWidget->setFixedSize(250, 250);
-
     // 创建 Qt3D 窗口,这是设置大小的，不要改
-    Qt3DExtras::Qt3DWindow* view3D = new Qt3DExtras::Qt3DWindow();
+    view3D = new Qt3DExtras::Qt3DWindow();
     view3D->defaultFrameGraph()->setClearColor(Qt::white);
     QWidget* container = QWidget::createWindowContainer(view3D, childWidget);
     container->setGeometry(0, 0, GRAPHIC_VIEW_WIDTH- 2, GRAPHIC_VIEW_HEIGHT - 6);
-
     // 创建 3D 实体
-    Qt3DCore::QEntity* rootEntity = new Qt3DCore::QEntity();
-
-    // 创建 3D 材质
-    //Qt3DExtras::QDiffuseSpecularMaterial* material = new Qt3DExtras::QDiffuseSpecularMaterial();
-   // material->setDiffuse(QColor(0, 0, 255)); // 设置球体的漫反射颜色为红色
-    Qt3DExtras::QPhongAlphaMaterial* material = new Qt3DExtras::QPhongAlphaMaterial();
-    material->setDiffuse(QColor(0,0,255,0));
-    // 创建并设置边框宽度的参数
-    Qt3DRender::QParameter* lineWidthParam = new Qt3DRender::QParameter;
-    lineWidthParam->setName("lineWidth");
-    lineWidthParam->setValue(1.0); // 设置边框宽度
-
-    // 创建边框颜色参数
-    Qt3DRender::QParameter* lineColorParam = new Qt3DRender::QParameter;
-    lineColorParam->setName("lineColor");
-    lineColorParam->setValue(QColor(255, 0, 0)); // 设置边框颜色
-
-    // 将参数添加到材质中
-    material->addParameter(lineWidthParam);
-    material->addParameter(lineColorParam);
-
-
-    //std::vector<double> temp11 = { 3.7255595916094270e-01, -3.2286315095976620e-01, 2.5998065119306002e+00 };
-    //std::vector<double> temp12 = { 6.1493345305296354e-01, 1.8370675629054839e-01, -3.0332846618352547e+00 };
-    //std::vector<double> temp13 = { -3.1328447296075423e-01, -1.8878982619689827e-01, 3.1227561623556346e+00 };
-    //std::vector<std::vector<double> > r = { temp11,temp12,temp13 };
-
-    //std::vector<double> temp21 = { 3.6222302556773556e-01, 1.8124125958992307e-01, 9.1641694205212221e-01 };
-    //std::vector<double> temp22 = { 5.1387812804136901e-02, 4.1264447962786516e-01, 1.2561808957122409e+00 };
-    //std::vector<double> temp23 = { 1.6484524415527824e-01, 7.4722399627735903e-01, 1.4310930451633073e+00 };
-    //std::vector<std::vector<double> > t = { temp21,temp22,temp23 };
-    // 
-    
-
-
-    //// 创建 3D 立方体
-    //Qt3DExtras::QCuboidMesh* cubeMesh = new Qt3DExtras::QCuboidMesh();
-    //cubeMesh->setXExtent(20.0);
-    //cubeMesh->setYExtent(0.1);
-    //cubeMesh->setZExtent(20.0);
-    //// 创建 3D 实体组件
-    //Qt3DCore::QEntity* cubeEntity = new Qt3DCore::QEntity(rootEntity);
-    //cubeEntity->addComponent(cubeMesh);
-    //cubeEntity->addComponent(material);
-
-    //// 创建 3D 变换组件
-    //Qt3DCore::QTransform* transform = new Qt3DCore::QTransform();
-    //cubeEntity->addComponent(transform);
-    //
-    //// 旋转立方体
-    //QVector3D rotationVector(
-    //    static_cast<float>(3.7255595916094270e-01),
-    //    static_cast<float>(-3.2286315095976620e-01),
-    //    static_cast<float>(2.5998065119306002e+00)
-    //);
-    //QQuaternion rotation = QQuaternion::fromEulerAngles(rotationVector);
-    //transform->setRotation(rotation);
-
-    //    
-    //// 平移立方体
-    //QVector3D translation(
-    //    static_cast<float>(3.6222302556773556e-01),
-    //    static_cast<float>(1.8124125958992307e-01),
-    //    static_cast<float>(9.1641694205212221e-01)
-    //);
-    //transform->setTranslation(translation);
-
-
-
+    rootEntity = new Qt3DCore::QEntity();
     // 创建 3D 相机
     Qt3DRender::QCamera* camera = view3D->camera();
     camera->lens()->setPerspectiveProjection(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
@@ -1150,9 +1094,6 @@ void CalibrationTool::createPatternCentric2() {
     //lightTransform->setTranslation(QVector3D(0, 50, 0));
     lightEntity->addComponent(lightTransform);
 
-
-
-
     // 设置根实体
     view3D->setRootEntity(rootEntity);
 
@@ -1165,16 +1106,16 @@ void CalibrationTool::createPatternCentric2() {
     // 向场景中添加物体
     // ************************************************
     // 创建 坐标轴
-    createAxis(rootEntity);
+    createAxis();
     // 创建 标定板平面
-    createPlane(rootEntity);
+    createPlane();
     // 创建 刻度
-    createScale(rootEntity, camera);
+    createScale(camera);
 
-    // 创建 相机位姿
-    vector<Qt3DCore::QEntity*> cuboids;
+}
+
+void CalibrationTool::addCuboidToCentric() {
     // 通过遍历所给的位置向量，创建多个
-   // cuboids.push_back(createCuboid(rootEntity));
     qDebug() << "rvec   " << endl;
     qDebug() << this->calibResults.rvecs.size() << endl;
     for (int i = 0; i < this->calibResults.rvecs.size(); i++) {
@@ -1183,42 +1124,32 @@ void CalibrationTool::createPatternCentric2() {
         qDebug() << this->calibResults.rvecs[i].at<double>(1, 0) << endl;
         // 平移立方体
         QVector3D translation(
-            static_cast<float>(this->calibResults.tvecs[i].at<double>(0, 0)),
-            static_cast<float>(this->calibResults.tvecs[i].at<double>(1, 0) + TRANSLATION_BASE_OFFSET),
-            static_cast<float>(this->calibResults.tvecs[i].at<double>(2, 0))
+            static_cast<float>(this->calibResults.tvecs[i].at<double>(0, 0) * TRANSLATION_BASE_SCALE),
+            static_cast<float>(this->calibResults.tvecs[i].at<double>(1, 0) * TRANSLATION_BASE_SCALE + TRANSLATION_BASE_OFFSET),
+            static_cast<float>(this->calibResults.tvecs[i].at<double>(2, 0) * TRANSLATION_BASE_SCALE)
         );
 
         // 旋转立方体
         QVector3D rotationVector(
-            static_cast<float>(this->calibResults.rvecs[i].at<double>(0, 0) * ROTATION_BASE_SCALE + ROTATION_BASE_X_TRANSLATION),
-            static_cast<float>(this->calibResults.rvecs[i].at<double>(1, 0) * ROTATION_BASE_SCALE),
-            static_cast<float>(this->calibResults.rvecs[i].at<double>(2, 0) * ROTATION_BASE_SCALE)
+            static_cast<float>(this->calibResults.rvecs[i].at<double>(0, 0) * MAX_RADIAN / PI + ROTATION_BASE_X_TRANSLATION),
+            static_cast<float>(this->calibResults.rvecs[i].at<double>(1, 0) * MAX_RADIAN / PI),
+            static_cast<float>(this->calibResults.rvecs[i].at<double>(2, 0) * MAX_RADIAN / PI)
         );
         //QQuaternion rotation = QQuaternion::fromEulerAngles(rotationVector);
-        cuboids.push_back(createCuboid(rootEntity, translation, rotationVector));
-
+        this->cuboids.push_back(createCuboid(translation, rotationVector));
     }
-    /*cuboids.push_back(createCuboid(rootEntity, 
+
+
+    //std::vector<double> temp11 = { 3.7255595916094270e-01, -3.2286315095976620e-01, 2.5998065119306002e+00 };
+    //std::vector<double> temp12 = { 6.1493345305296354e-01, 1.8370675629054839e-01, -3.0332846618352547e+00 };
+    //std::vector<double> temp13 = { -3.1328447296075423e-01, -1.8878982619689827e-01, 3.1227561623556346e+00 };
+    //std::vector<std::vector<double> > r = { temp11,temp12,temp13 };
+
+    //std::vector<double> temp21 = { 3.6222302556773556e-01, 1.8124125958992307e-01, 9.1641694205212221e-01 };
+    //std::vector<double> temp22 = { 5.1387812804136901e-02, 4.1264447962786516e-01, 1.2561808957122409e+00 };
+    //std::vector<double> temp23 = { 1.6484524415527824e-01, 7.4722399627735903e-01, 1.4310930451633073e+00 };
+    //std::vector<std::vector<double> > t = { temp21,temp22,temp23 };
+    /*cuboids.push_back(createCuboid(rootEntity,
         QVector3D(3.6222302556773556e-01, 1.8124125958992307e-01 + 10, 9.1641694205212221e-01),
         QVector3D(3.7255595916094270e-01*10 +90 , -3.2286315095976620e-01*10, 2.5998065119306002e+00*10)));*/
-
-}
-
-void CalibrationTool::calculateAxisAngle() {
-    // 将旋转向量转换为轴角表示法
-    std::vector<cv::Vec3d> axisAngles;
-    for (const auto& rvec : this->calibResults.rvecs) {
-        cv::Mat rotationMatrix;
-        cv::Rodrigues(rvec, rotationMatrix);
-        cv::Vec3d axisAngle;
-        cv::Rodrigues(rotationMatrix, axisAngle);
-        axisAngles.push_back(axisAngle);
-    }
-
-    // 打印每个图像的轴角表示法
-    for (const auto& axisAngle : axisAngles) {
-        std::cout << "Axis: " << axisAngle[0] << ", " << axisAngle[1] << ", " << axisAngle[2] << std::endl;
-        std::cout << "Angle: " << cv::norm(axisAngle) << std::endl;
-    }
-
 }
