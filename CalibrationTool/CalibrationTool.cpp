@@ -539,13 +539,13 @@ void CalibrationTool::clickToShow(int index) {
                 if (i == realIndex) {
                     Qt3DCore::QEntity* cube = this->cuboids[i];
                     Qt3DExtras::QPhongMaterial* cuboidMaterial = new Qt3DExtras::QPhongMaterial();
-                    cuboidMaterial->setAmbient(QColor(192, 192, 192, 0.1));
+                    cuboidMaterial->setAmbient(CHOSEN_ENTITY_COLOR);
                     cube->addComponent(cuboidMaterial);
                 }
                 else {
                     Qt3DCore::QEntity* cube = this->cuboids[i];
                     Qt3DExtras::QPhongMaterial* cuboidMaterial = new Qt3DExtras::QPhongMaterial();
-                    cuboidMaterial->setAmbient(QColor(102, 255, 255, 0.1));
+                    cuboidMaterial->setAmbient(DEFAULT_ENTITY_COLOR);
                     cube->addComponent(cuboidMaterial);
                 }
             }
@@ -934,8 +934,7 @@ Qt3DCore::QEntity* CalibrationTool::createCuboid(QVector3D transformMatrix, QVec
     cuboidTransform->setTranslation(transformMatrix);
     // CuboidMesh Material
     Qt3DExtras::QPhongMaterial* cuboidMaterial = new Qt3DExtras::QPhongMaterial();
-    cuboidMaterial->setAmbient(QColor(102, 255, 255, 0.1));
-    //cuboidMaterial->setDiffuse(QColor(102, 255, 255));
+    cuboidMaterial->setAmbient(DEFAULT_ENTITY_COLOR);
     // Cuboid entity
     Qt3DCore::QEntity* cuboidEntity = new Qt3DCore::QEntity(this->rootEntity);
     cuboidEntity->addComponent(cuboid);
@@ -958,7 +957,7 @@ void CalibrationTool::createPatternCentric() {
     rootEntity = new Qt3DCore::QEntity();
     // 创建 3D 相机
     Qt3DRender::QCamera* camera = view3D->camera();
-    camera->lens()->setPerspectiveProjection(45.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
+    camera->lens()->setPerspectiveProjection(50.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
     camera->setPosition(QVector3D(35.0f, 18.0f, 30.0f));
     camera->setUpVector(QVector3D(0, 1, 0));
     camera->setViewCenter(QVector3D(0, 0, 0));
