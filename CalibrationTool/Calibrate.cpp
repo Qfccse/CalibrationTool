@@ -71,11 +71,11 @@ FullCalibrateResults calibrate(const QStringList& fileNames, const int cameraTyp
     res.rvecs = rvecs;
     res.tvecs = tvecs;
     // 保存相机内参矩阵和畸变系数到文本文件
-    cv::FileStorage fs(INTRINSIC_SAVE_PATH, cv::FileStorage::WRITE);
+    /*cv::FileStorage fs(INTRINSIC_SAVE_PATH, cv::FileStorage::WRITE);
     fs << "CameraMatrix" << cameraMatrix;
     fs << "DistortionCoefficients" << distCoeffs;
     fs << "R" << rvecs;
-    fs << "t" << tvecs;
+    fs << "t" << tvecs;*/
     // cout << "Camera matrix:" << endl << cameraMatrix << endl;
     // cout << "Distortion coefficients:" << endl << distCoeffs << endl;
     // 计算每张图像的重投影误差
@@ -86,8 +86,8 @@ FullCalibrateResults calibrate(const QStringList& fileNames, const int cameraTyp
         // cout << "Reprojection error for image " << i << ": " << reprojectionError << endl;
     }
     res.reprojectionError = errors;
-    fs << "errors" << errors;
-    fs.release();
+   // fs << "errors" << errors;
+    //fs.release();
     objectPoints.clear();
     imagePoints.clear();
 
@@ -218,11 +218,11 @@ CalibrateResults calibarteWithCorners(const vector<vector<cv::Point2f>>& imageCo
     res.tvecs = tvecs;
 
     // 保存相机内参矩阵和畸变系数到文本文件
-    cv::FileStorage fs(INTRINSIC_SAVE_PATH, cv::FileStorage::WRITE);
-    fs << "CameraMatrix" << cameraMatrix;
-    fs << "DistortionCoefficients" << distCoeffs;
-    fs << "R" << rvecs;
-    fs << "t" << tvecs;
+    //cv::FileStorage fs(INTRINSIC_SAVE_PATH, cv::FileStorage::WRITE);
+    //fs << "CameraMatrix" << cameraMatrix;
+    //fs << "DistortionCoefficients" << distCoeffs;
+    //fs << "R" << rvecs;
+    //fs << "t" << tvecs;
     // cout << "Camera matrix:" << endl << cameraMatrix << endl;
     // cout << "Distortion coefficients:" << endl << distCoeffs << endl;
     // 计算每张图像的重投影误差
@@ -233,8 +233,8 @@ CalibrateResults calibarteWithCorners(const vector<vector<cv::Point2f>>& imageCo
         // cout << "Reprojection error for image " << i << ": " << reprojectionError << endl;
     }
     res.reprojectionError = errors;
-    fs << "errors" << errors;
-    fs.release();
+    //fs << "errors" << errors;
+    //fs.release();
     objectPoints.clear();
     imagePoints.clear();
 

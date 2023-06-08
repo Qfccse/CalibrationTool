@@ -20,6 +20,7 @@ CalibrationTool::CalibrationTool(QWidget* parent)
     connect(ui.calib, SIGNAL(clicked()), this, SLOT(startCalibrate()));
     connect(ui.open, SIGNAL(clicked()), this, SLOT(fileOpenActionSlot()));
     connect(ui.changePicMode, SIGNAL(clicked()), this, SLOT(changeShowUndistorted()));
+    connect(ui.ExportBotton,SIGNAL(clicked()),this,SLOT(clickToSave()));
 
     // ui.imageList
     connect(ui.imageList, &QListWidget::itemClicked, this, &CalibrationTool::handleListItemClick);
@@ -491,6 +492,68 @@ void CalibrationTool::handleListItemClick(QListWidgetItem* item)
 
     this->clickToShow(index);
 
+}
+
+
+void CalibrationTool::clickToSave() {
+    if (this->calibResults.distCoeffs.empty()) {
+        QMessageBox::warning(this, tr("warning"),
+            tr("no avaliable coeffs to save"));
+
+        return;
+    }
+    //形参分别为: parent窗口指针、对话框标题、默认显示的目录、设置如何运行对话框(Options枚举)
+   //该函数返回用户所设定的包含文件名的目录 
+    QString path = QDir(QCoreApplication::applicationDirPath()).filePath("intrinsic.txt");
+    if (path.isEmpty()) {
+#ifdef Q_OS_WIN
+        path = DEFAULT_INTRINSIC_SAVE_PATH_WIN;
+#endif
+
+#ifdef Q_OS_LINUX
+        path = DEFAULT_INTRINSIC_SAVE_PATH_LINUX;
+#endif
+    }
+
+    QString fileName = QFileDialog::getSaveFileName(
+        this,
+        tr("Save File"),
+        path,
+        tr("Text Files (*.txt)"));
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            std::string filePath = file.fileName().toStdString();
+            cv::FileStorage fs(filePath, cv::FileStorage::WRITE);
+            if (fs.isOpened()) {
+                // 存储数据到FileStorage
+                fs << "CameraMatrix" << this->calibResults.cameraMatrix;
+                fs << "DistortionCoefficients" << this->calibResults.distCoeffs;
+                // 关闭FileStorage
+                fs.release();
+
+                QMessageBox::information(this, tr("Success"), tr("Save succeed"),
+                    QMessageBox::Yes);
+            }
+            else {
+                QMessageBox msgBox;
+                msgBox.setText("Can not open " + fileName);
+                msgBox.setStandardButtons(QMessageBox::Yes);
+                msgBox.setDefaultButton(QMessageBox::Yes);
+                QMessageBox::critical(this, tr("Error"), tr(("Can not open " + filePath).c_str()),
+                    QMessageBox::Yes);
+                // FileStorage打开失败
+            }
+
+            file.close();
+        }
+        else {
+            // Failed to open the file for writing.
+            QMessageBox::warning(this, tr("error"),
+                tr("Failed to open the file for writing."));
+
+        }
+    }
 }
 
 void CalibrationTool::changeShowUndistorted() {

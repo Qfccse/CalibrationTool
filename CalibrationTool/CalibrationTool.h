@@ -48,6 +48,7 @@ public slots:
     void updateProgress(int value); //相机标定的进度条更新函数
     void clickToUndistort();
     void clickToShow(int index);
+    void clickToSave();
 
     /*处理鼠标右键事件，弹出菜单*/
     void onCustomContextMenuRequested(const QPoint & pos);

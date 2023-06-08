@@ -34,7 +34,8 @@ using namespace std;
 #define NORMAL_CAM 1
 #define FISH_EYE_CAM 2
 #define BOARD_SIZE Size(9,6)
-#define INTRINSIC_SAVE_PATH "E:\\cv\\camera_parameters2.txt"
+#define DEFAULT_INTRINSIC_SAVE_PATH_WIN "C:\\cv\\intrinsic.txt"
+#define DEFAULT_INTRINSIC_SAVE_PATH_LINUX "/home/intrinsic.txt"
 
 
 struct  FullCalibrateResults
