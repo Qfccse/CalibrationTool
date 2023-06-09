@@ -301,7 +301,7 @@ overflow: hidden;
      </rect>
     </property>
     <property name="text">
-     <string>loading label</string>
+     <string/>
     </property>
    </widget>
   </widget>

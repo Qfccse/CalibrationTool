@@ -5,6 +5,12 @@
 #include <vector>
 #include <unordered_map>
 #include <opencv2/opencv.hpp>
+#include <opencv2/calib3d.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/core/types_c.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/core/types.hpp>
 #include <QString>
 #include <QStringList>
 #include <QtWidgets/QMainWindow>
@@ -30,6 +36,8 @@ using namespace std;
 #define ROTATION_BASE_X_TRANSLATION 90
 #define CHOSEN_ENTITY_COLOR QColor(192, 192, 192, 0.1)
 #define DEFAULT_ENTITY_COLOR QColor(102, 255, 255, 0.1)
+#define BASE_CUBOID_SCALE 480
+#define CUBOID_SCALE_UNIT 4.0
 
 #define NORMAL_CAM 1
 #define FISH_EYE_CAM 2

@@ -85,11 +85,14 @@ private:
     QProgressDialog* progressBar = nullptr; // 进度条
 
     QLabel* m_tooltip = nullptr; // 条形图指针
+    Qt3DExtras::Qt3DWindow* view3D = nullptr;// 3D 视图
+    Qt3DCore::QEntity* rootEntity = nullptr; // 3D 实体
 
-    QMenu* popMenu_In_ListWidget_ = nullptr;/*弹出菜单*/
-    QAction* action_Delete_In_ListWidget_ = nullptr;/*菜单上的Action*/
-    QAction* action_Clear_In_ListWidget_ = nullptr;/*菜单上的Action*/
-    QAction* action_Delete_And_ReCalibrate_In_ListWidget_ = nullptr;
+    QMenu* popMenu = nullptr;//弹出菜单
+    QAction* deleteAction = nullptr; //菜单上的Action
+    QAction* clearAction = nullptr;  //菜单上的Action
+    QAction* clearAndCalibrateAction = nullptr;
+
 private:
     bool showUndistored = false;
     int maxNameIndex = 0;
@@ -101,9 +104,5 @@ private:
     vector<QString> imageNameList;
     vector<cv::Mat> imageMatList;
     vector<cv::Mat> undistortedImageList;
-    Qt3DExtras::Qt3DWindow* view3D;
-    // 3D 实体
-    Qt3DCore::QEntity* rootEntity;
-    // 创建 相机位姿
     vector<Qt3DCore::QEntity*> cuboids;
 };

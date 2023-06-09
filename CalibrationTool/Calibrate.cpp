@@ -1,23 +1,23 @@
-#include "Calibrate.h"
+ï»¿#include "Calibrate.h"
 #include "CalibrationTool.h"
 
 FullCalibrateResults calibrate(const QStringList& fileNames, const int cameraType) {
-    // 1. ×¼±¸±ê¶¨ÆåÅÌÍ¼Ïñ
-    int boardWidth = 9;  // ÆåÅÌ¸ñºáÏòÄÚ½ÇµãÊıÁ¿
-    int boardHeight = 6; // ÆåÅÌ¸ñ×İÏòÄÚ½ÇµãÊıÁ¿
-    float squareSize = 0.12f; // ÆåÅÌ¸ñ¸ñ×ÓµÄ´óĞ¡£¬µ¥Î»ÎªÃ×,Ëæ±ãÉèÖÃ£¬²»Ó°ÏìÏà»úÄÚ²Î¼ÆËã
+    // 1. å‡†å¤‡æ ‡å®šæ£‹ç›˜å›¾åƒ
+    int boardWidth = 9;  // æ£‹ç›˜æ ¼æ¨ªå‘å†…è§’ç‚¹æ•°é‡
+    int boardHeight = 6; // æ£‹ç›˜æ ¼çºµå‘å†…è§’ç‚¹æ•°é‡
+    float squareSize = 0.12f; // æ£‹ç›˜æ ¼æ ¼å­çš„å¤§å°ï¼Œå•ä½ä¸ºç±³,éšä¾¿è®¾ç½®ï¼Œä¸å½±å“ç›¸æœºå†…å‚è®¡ç®—
     cv::Size boardSize(boardWidth, boardHeight);
 
     vector<vector<cv::Point3f>> objectPoints;
     vector<vector<cv::Point2f>> imagePoints;
     vector<cv::Point2f> corners;
 
-    // 2. ÅÄÉãÆåÅÌÍ¼Ïñ
+    // 2. æ‹æ‘„æ£‹ç›˜å›¾åƒ
     cv::Mat image, gray;
     // namedWindow("image", WINDOW_NORMAL);
     FullCalibrateResults res;
 
-    // 3. ¶ÁÈëÍ¼ÏñÊı¾İ£¬²¢ÌáÈ¡½Çµã
+    // 3. è¯»å…¥å›¾åƒæ•°æ®ï¼Œå¹¶æå–è§’ç‚¹
     for (size_t i = 0; i < fileNames.size(); i++)
     {
         image = cv::imread(fileNames[i].toStdString(), cv::IMREAD_COLOR);
@@ -47,14 +47,14 @@ FullCalibrateResults calibrate(const QStringList& fileNames, const int cameraTyp
         else
         {
             std::vector<cv::Point2f> emptyVector;
-            // ½« emptyVector Ìí¼Óµ½ imageCorners
+            // å°† emptyVector æ·»åŠ åˆ° imageCorners
             res.imageCorners.push_back(emptyVector);
         }
 
         // cout << i << endl;
     }
 
-    // 4. ±ê¶¨Ïà»ú
+    // 4. æ ‡å®šç›¸æœº
     cv::Mat cameraMatrix, distCoeffs;
     vector<cv::Mat> rvecs, tvecs;
     double totalReprojectionError;
@@ -70,7 +70,7 @@ FullCalibrateResults calibrate(const QStringList& fileNames, const int cameraTyp
     res.distCoeffs = distCoeffs;
     res.rvecs = rvecs;
     res.tvecs = tvecs;
-    // ±£´æÏà»úÄÚ²Î¾ØÕóºÍ»û±äÏµÊıµ½ÎÄ±¾ÎÄ¼ş
+    // ä¿å­˜ç›¸æœºå†…å‚çŸ©é˜µå’Œç•¸å˜ç³»æ•°åˆ°æ–‡æœ¬æ–‡ä»¶
     /*cv::FileStorage fs(INTRINSIC_SAVE_PATH, cv::FileStorage::WRITE);
     fs << "CameraMatrix" << cameraMatrix;
     fs << "DistortionCoefficients" << distCoeffs;
@@ -78,7 +78,7 @@ FullCalibrateResults calibrate(const QStringList& fileNames, const int cameraTyp
     fs << "t" << tvecs;*/
     // cout << "Camera matrix:" << endl << cameraMatrix << endl;
     // cout << "Distortion coefficients:" << endl << distCoeffs << endl;
-    // ¼ÆËãÃ¿ÕÅÍ¼ÏñµÄÖØÍ¶Ó°Îó²î
+    // è®¡ç®—æ¯å¼ å›¾åƒçš„é‡æŠ•å½±è¯¯å·®
     vector<double> errors;
     for (size_t i = 0; i < objectPoints.size(); i++) {
         double reprojectionError = calculateReprojectionError(objectPoints[i], imagePoints[i], cameraMatrix, distCoeffs, rvecs[i], tvecs[i], cameraType);
@@ -86,8 +86,8 @@ FullCalibrateResults calibrate(const QStringList& fileNames, const int cameraTyp
         // cout << "Reprojection error for image " << i << ": " << reprojectionError << endl;
     }
     res.reprojectionError = errors;
-   // fs << "errors" << errors;
-    //fs.release();
+    // fs << "errors" << errors;
+     //fs.release();
     objectPoints.clear();
     imagePoints.clear();
 
@@ -98,15 +98,15 @@ FullCalibrateResults calibrate(const QStringList& fileNames, const int cameraTyp
 vector<vector<cv::Point2f>> findCorners(const QStringList& fileNames,
     const cv::Size boardSize,
     CalibrationTool* ui) {
-    // 1. ×¼±¸±ê¶¨ÆåÅÌÍ¼Ïñ
-    float squareSize = 0.12f; // ÆåÅÌ¸ñ¸ñ×ÓµÄ´óĞ¡£¬µ¥Î»ÎªÃ×,Ëæ±ãÉèÖÃ£¬²»Ó°ÏìÏà»úÄÚ²Î¼ÆËã
+    // 1. å‡†å¤‡æ ‡å®šæ£‹ç›˜å›¾åƒ
+    float squareSize = 0.12f; // æ£‹ç›˜æ ¼æ ¼å­çš„å¤§å°ï¼Œå•ä½ä¸ºç±³,éšä¾¿è®¾ç½®ï¼Œä¸å½±å“ç›¸æœºå†…å‚è®¡ç®—
     vector<cv::Point2f> corners;
 
-    // 2. ÅÄÉãÆåÅÌÍ¼Ïñ
+    // 2. æ‹æ‘„æ£‹ç›˜å›¾åƒ
     cv::Mat image, gray;
     vector<vector<cv::Point2f>> res;
 
-    // 3. ¶ÁÈëÍ¼ÏñÊı¾İ£¬²¢ÌáÈ¡½Çµã
+    // 3. è¯»å…¥å›¾åƒæ•°æ®ï¼Œå¹¶æå–è§’ç‚¹
     for (size_t i = 0; i < fileNames.size(); i++)
     {
         image = cv::imread(fileNames[i].toStdString(), cv::IMREAD_COLOR);
@@ -123,19 +123,19 @@ vector<vector<cv::Point2f>> findCorners(const QStringList& fileNames,
         else
         {
             std::vector<cv::Point2f> emptyVector;
-            // ½« emptyVector Ìí¼Óµ½ imageCorners
+            // å°† emptyVector æ·»åŠ åˆ° imageCorners
             res.push_back(emptyVector);
         }
-        // ¸üĞÂ½ø¶È
+        // æ›´æ–°è¿›åº¦
         int progress = (i + 1) * 100 / fileNames.size();
-        emit ui->progressUpdate(progress); // ·¢ËÍ½ø¶È¸üĞÂĞÅºÅ
+        emit ui->progressUpdate(progress); // å‘é€è¿›åº¦æ›´æ–°ä¿¡å·
     }
 
     return res;
 }
 
 vector<cv::Point2f> findOneCorners(const QString& fileName, const cv::Size boardSize) {
-    float squareSize = 0.12f; // ÆåÅÌ¸ñ¸ñ×ÓµÄ´óĞ¡£¬µ¥Î»ÎªÃ×,Ëæ±ãÉèÖÃ£¬²»Ó°ÏìÏà»úÄÚ²Î¼ÆËã
+    float squareSize = 0.12f; // æ£‹ç›˜æ ¼æ ¼å­çš„å¤§å°ï¼Œå•ä½ä¸ºç±³,éšä¾¿è®¾ç½®ï¼Œä¸å½±å“ç›¸æœºå†…å‚è®¡ç®—
     vector<cv::Point2f> corners;
     cv::Mat image, gray;
     image = cv::imread(fileName.toStdString(), cv::IMREAD_COLOR);
@@ -157,7 +157,7 @@ vector<cv::Point2f> findOneCorners(const QString& fileName, const cv::Size board
 }
 
 vector<cv::Point2f> findOneCorners(const cv::Mat& imageFromCam, const cv::Size boardSize) {
-    float squareSize = 0.12f; // ÆåÅÌ¸ñ¸ñ×ÓµÄ´óĞ¡£¬µ¥Î»ÎªÃ×,Ëæ±ãÉèÖÃ£¬²»Ó°ÏìÏà»úÄÚ²Î¼ÆËã
+    float squareSize = 0.12f; // æ£‹ç›˜æ ¼æ ¼å­çš„å¤§å°ï¼Œå•ä½ä¸ºç±³,éšä¾¿è®¾ç½®ï¼Œä¸å½±å“ç›¸æœºå†…å‚è®¡ç®—
     vector<cv::Point2f> corners;
     cv::Mat image, gray;
     image = imageFromCam;
@@ -180,13 +180,18 @@ vector<cv::Point2f> findOneCorners(const cv::Mat& imageFromCam, const cv::Size b
 
 
 CalibrateResults calibarteWithCorners(const vector<vector<cv::Point2f>>& imageCorners,
-    const cv::Size imageSize, const cv::Size boardSize, const int cameraType) {
+    const cv::Size imageSize,
+    const cv::Size boardSize,
+    const int cameraType) {
+    qDebug() << "calib 1" << endl;
     CalibrateResults res;
     vector<vector<cv::Point3f>> objectPoints;
     vector<vector<cv::Point2f>> imagePoints;
 
     for (size_t i = 0; i < imageCorners.size(); i++) {
+        qDebug() << "calib process coners " << i << endl;
         if (!imageCorners[i].empty()) {
+            qDebug() << "empty coners " << endl;
             vector<cv::Point3f> objectCorners;
             for (int j = 0; j < boardSize.height; j++)
             {
@@ -199,25 +204,34 @@ CalibrateResults calibarteWithCorners(const vector<vector<cv::Point2f>>& imageCo
             imagePoints.push_back(imageCorners[i]);
         }
     }
-
-    // 4. ±ê¶¨Ïà»ú
+    qDebug() << "calib 2" << endl;
+    // 4. æ ‡å®šç›¸æœº
     cv::Mat cameraMatrix, distCoeffs;
     vector<cv::Mat> rvecs, tvecs;
     double totalReprojectionError;
     if (cameraType == NORMAL_CAM)
     {
+        qDebug() << "calib with normal" << endl;
         totalReprojectionError = cv::calibrateCamera(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs);
     }
     else //FISH_EYE_TYPE
     {
-        totalReprojectionError = cv::fisheye::calibrate(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs);
+        qDebug() << "calib with fish" << endl;
+        int flags = 0;
+        flags |= cv::fisheye::CALIB_RECOMPUTE_EXTRINSIC;
+        flags |= cv::fisheye::CALIB_CHECK_COND;
+        flags |= cv::fisheye::CALIB_FIX_SKEW;
+        totalReprojectionError = cv::fisheye::calibrate(objectPoints, imagePoints, imageSize,
+            cameraMatrix, distCoeffs, rvecs, tvecs, flags,
+            cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 500, 1e-10));
     }
     res.cameraMatrix = cameraMatrix;
     res.distCoeffs = distCoeffs;
     res.rvecs = rvecs;
     res.tvecs = tvecs;
+    qDebug() << "calib done" << endl;
 
-    // ±£´æÏà»úÄÚ²Î¾ØÕóºÍ»û±äÏµÊıµ½ÎÄ±¾ÎÄ¼ş
+    // ä¿å­˜ç›¸æœºå†…å‚çŸ©é˜µå’Œç•¸å˜ç³»æ•°åˆ°æ–‡æœ¬æ–‡ä»¶
     //cv::FileStorage fs(INTRINSIC_SAVE_PATH, cv::FileStorage::WRITE);
     //fs << "CameraMatrix" << cameraMatrix;
     //fs << "DistortionCoefficients" << distCoeffs;
@@ -225,14 +239,17 @@ CalibrateResults calibarteWithCorners(const vector<vector<cv::Point2f>>& imageCo
     //fs << "t" << tvecs;
     // cout << "Camera matrix:" << endl << cameraMatrix << endl;
     // cout << "Distortion coefficients:" << endl << distCoeffs << endl;
-    // ¼ÆËãÃ¿ÕÅÍ¼ÏñµÄÖØÍ¶Ó°Îó²î
+    // è®¡ç®—æ¯å¼ å›¾åƒçš„é‡æŠ•å½±è¯¯å·®
     vector<double> errors;
     for (size_t i = 0; i < objectPoints.size(); i++) {
         double reprojectionError = calculateReprojectionError(objectPoints[i], imagePoints[i], cameraMatrix, distCoeffs, rvecs[i], tvecs[i], cameraType);
         errors.push_back(reprojectionError);
-        // cout << "Reprojection error for image " << i << ": " << reprojectionError << endl;
+
+        qDebug() << "Reprojection error for image " << i << ": " << reprojectionError << endl;
     }
     res.reprojectionError = errors;
+
+    qDebug() << "done" << endl;
     //fs << "errors" << errors;
     //fs.release();
     objectPoints.clear();
@@ -255,19 +272,29 @@ double calculateReprojectionError(const vector<cv::Point3f>& objectPoints,
     }
     else //FISH_EYE_TYPE
     {
-        cv::fisheye::projectPoints(objectPoints, rvec, tvec, cameraMatrix, distCoeffs, projectedPoints);
+        cv::fisheye::projectPoints(objectPoints, projectedPoints, rvec, tvec, cameraMatrix, distCoeffs);
     }
 
     double reprojectionError = 0.0;
     int numPoints = objectPoints.size();
-
     for (int i = 0; i < numPoints; i++) {
         double dx = projectedPoints[i].x - imagePoints[i].x;
         double dy = projectedPoints[i].y - imagePoints[i].y;
         reprojectionError += sqrt(dx * dx + dy * dy);
     }
-
     return reprojectionError / numPoints;
+    
+    
+    //è®¡ç®—è§‚å¯Ÿåˆ°çš„å›¾åƒç©ºé—´ä¸­äº¤å‰ç‚¹çš„åæ ‡objectPointsä¸æ ¹æ®ç›¸æœºå‚æ•°è®¡ç®—å‡ºæ¥çš„äº¤å‰ç‚¹æŠ•å½±ç‚¹åæ ‡projectedPointsçš„è¯¯å·®
+    //cv::Mat calcPointsMat = cv::Mat(1, projectedPoints.size(), CV_32FC2);
+    //cv::Mat realPointMat = cv::Mat(1, objectPoints.size(), CV_32FC2);
+    //for (size_t i = 0; i != objectPoints.size(); i++)
+    //{
+    //    calcPointsMat.at<cv::Vec2f>(0, i) = cv::Vec2f(projectedPoints[i].x, projectedPoints[i].y);
+    //    realPointMat.at<cv::Vec2f>(0, i) = cv::Vec2f(objectPoints[i].x, objectPoints[i].y);
+    //}
+    //double nError = norm(calcPointsMat, realPointMat, cv::NORM_L2); 
+    //return nError;
 }
 
 
