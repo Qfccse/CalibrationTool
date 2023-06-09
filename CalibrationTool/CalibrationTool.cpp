@@ -567,7 +567,7 @@ void CalibrationTool::changeShowUndistorted() {
 
 void CalibrationTool::clickToShow(int index) {
     clickedIndex = index;
-    qDebug() << "total image num is" << this->imageCorners.size() << "  Clicked item text: " << index << "\n";
+    qDebug() << "total image num is" << this->imageCorners.size() << "  Clicked item index: " << index << "\n";
     vector<cv::Point2f> corners = this->imageCorners[index];
     QString fileName = this->imageNameList[index];
     cv::Mat flipedFrame;
@@ -577,13 +577,13 @@ void CalibrationTool::clickToShow(int index) {
             int realIndex = 0;
             for (int i = 0; i < this->imageCorners.size(); i++) {
                 if (!imageCorners[i].empty()) {
-                    if (realIndex == index) {
+                    if (i == index) {
                         break;
                     }
                     realIndex++;
                 }
             }
-            qDebug() << "real show cube " << realIndex-- << endl;
+            qDebug() << "real show cube " << realIndex << endl;
             for (int i = 0; i < this->cuboids.size(); i++) {
                 if (i == realIndex) {
                     Qt3DCore::QEntity* cube = this->cuboids[i];
@@ -827,14 +827,14 @@ void CalibrationTool::createAxis() {
     // X-axis mesh
     Qt3DExtras::QCylinderMesh* xAxisMesh = new Qt3DExtras::QCylinderMesh();
     xAxisMesh->setRadius(0.1f);
-    xAxisMesh->setLength(20.0f);
+    xAxisMesh->setLength(25.0f);
     // X-axis material
     Qt3DExtras::QPhongMaterial* xAxisMaterial = new Qt3DExtras::QPhongMaterial();
     xAxisMaterial->setAmbient(Qt::red); //color
     // X-axis transform
     Qt3DCore::QTransform* xAxisTransform = new Qt3DCore::QTransform();
     xAxisTransform->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), 90.0f));
-    xAxisTransform->setTranslation(QVector3D(0.0f, -10.0f, 10.0f));
+    xAxisTransform->setTranslation(QVector3D(2.5f, -10.0f, 10.0f));
     // X-axis entity
     Qt3DCore::QEntity* xAxisEntity = new Qt3DCore::QEntity(axisEntity);
     xAxisEntity->addComponent(xAxisMesh);
@@ -845,13 +845,13 @@ void CalibrationTool::createAxis() {
     // Y-axis mesh
     Qt3DExtras::QCylinderMesh* yAxisMesh = new Qt3DExtras::QCylinderMesh();
     yAxisMesh->setRadius(0.1f);
-    yAxisMesh->setLength(30.0f);
+    yAxisMesh->setLength(20.0f);
     // Y-axis material
     Qt3DExtras::QPhongMaterial* zXxisMaterial = new Qt3DExtras::QPhongMaterial();
     zXxisMaterial->setAmbient(Qt::green); //color
     // Y-axis transform
     Qt3DCore::QTransform* yAxisTransform = new Qt3DCore::QTransform();
-    yAxisTransform->setTranslation(QVector3D(-10.0f, 5.0f, 10.0f));
+    yAxisTransform->setTranslation(QVector3D(-10.0f, 0.0f, 10.0f));
     // Y-axis entity
     Qt3DCore::QEntity* yAxisEntity = new Qt3DCore::QEntity(axisEntity);
     yAxisEntity->addComponent(yAxisMesh);
@@ -869,7 +869,7 @@ void CalibrationTool::createAxis() {
     // Z-axis transform
     Qt3DCore::QTransform* zAxisTransform = new Qt3DCore::QTransform();
     zAxisTransform->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), -90.0f));
-    zAxisTransform->setTranslation(QVector3D(10.0f, -10.0f, 0.0f));
+    zAxisTransform->setTranslation(QVector3D(15.0f, -10.0f, 0.0f));
     // Z-axis entity
     Qt3DCore::QEntity* zAxisEntity = new Qt3DCore::QEntity(axisEntity);
     zAxisEntity->addComponent(zAxisMesh);
@@ -889,28 +889,31 @@ void CalibrationTool::createAxis() {
     vector<Qt3DCore::QEntity*> AxisEntitys;
     vector<QVector3D> AxisTransforms_ = {
         {0.0f, -10.0f, 5.0f}, {0.0f, -10.0f, 0.0f}, {0.0f, -10.0f, -5.0f}, {0.0f, -10.0f, -10.0f},
-        {0.0f, -5.0f, -10.0f}, {0.0f, 0.0f, -10.0f}, {0.0f, 5.0f, -10.0f}, {0.0f, 10.0f, -10.0f}, {0.0f, 15.0f, -10.0f}, {0.0f, 20.0f, -10.0f},
-
+        {5.0f, -10.0f, 5.0f}, {5.0f, -10.0f, 0.0f}, {5.0f, -10.0f, -5.0f}, {5.0f, -10.0f, -10.0f},
+        {0.0f, -5.0f, -10.0f}, {0.0f, 0.0f, -10.0f}, {0.0f, 5.0f, -10.0f}, {0.0f, 10.0f, -10.0f},
+        {5.0f, -5.0f, -10.0f}, {5.0f, 0.0f, -10.0f}, {5.0f, 5.0f, -10.0f}, {5.0f, 10.0f, -10.0f},
+        
         {-10.0f, 0.0f, 5.0f}, {-10.0f, 0.0f, 0.0f}, {-10.0f, 0.0f, -5.0f}, {-10.0f, 0.0f, -10.0f},
         {-5.0f, 0.0f, -10.0f}, {-0.0f, 0.0f, -10.0f}, {5.0f, 0.0f, -10.0f}, {10.0f, 0.0f, -10.0f},
-        {-10.0f, 10.0f, 5.0f}, {-10.0f, 10.0f, 0.0f}, {-10.0f, 10.0f, -5.0f}, {-10.0f, 10.0f, -10.0f},
-        {-5.0f, 10.0f, -10.0f}, {-0.0f, 10.0f, -10.0f}, {5.0f, 10.0f, -10.0f}, {10.0f, 10.0f, -10.0f},
+        {15.0f, 0.0f, -10.0f},
 
+        {15.0f, -10.0f, 0.0f}, {10.0f, -10.0f, 0.0f},
         {5.0f, -10.0f, 0.0f}, {0.0f, -10.0f, 0.0f}, {-5.0f, -10.0f, 0.0f}, {-10.0f, -10.0f, 0.0f},
-        {-10.0f, -5.0f, 0.0f}, {-10.0f, 0.0f, 0.0f}, {-10.0f, 5.0f, 0.0f}, {-10.0f, 10.0f, 0.0f},{-10.0f, 15.0f, 0.0f},{-10.0f, 20.0f, 0.0f},
+        {-10.0f, -5.0f, 0.0f}, {-10.0f, 0.0f, 0.0f}, {-10.0f, 5.0f, 0.0f}, {-10.0f, 10.0f, 0.0f},
+        
     };
     for (int i = 0; i < AxisTransforms_.size(); i++) {
         AxisTransforms.push_back(new Qt3DCore::QTransform());
 
-        if (i >= 0 && i <= 9) {
+        if (i >= 0 && i <= 15) {
             // 平行x轴的轴线
             AxisTransforms[i]->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), 90.0f));
         }
-        else if (i >= 10 && i <= 25) {
+        else if (i >= 16 && i <= 23) {
             // 平行y轴的轴线
             //AxisTransforms[i]->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(0, 0, 1), 90.0f));
         }
-        else if (i >= 26) {
+        else if (i >= 25) {
             // 平行z轴的轴线
             AxisTransforms[i]->setRotation(QQuaternion::fromAxisAndAngle(QVector3D(1, 0, 0), -90.0f));
         }
@@ -925,23 +928,22 @@ void CalibrationTool::createAxis() {
 
 }
 
-void CalibrationTool::createPlane() {
-    // Plane mesh
-    Qt3DExtras::QPlaneMesh* planeMesh = new Qt3DExtras::QPlaneMesh();
-    planeMesh->setWidth(1);
-    planeMesh->setHeight(1);
-    // Plane transform
-    Qt3DCore::QTransform* planeTransform = new Qt3DCore::QTransform();
-    planeTransform->setScale(8.0f);
-    planeTransform->setTranslation(QVector3D(0.0f, 0.0f, 0.0f));
-    // Plane material
-    Qt3DExtras::QPhongMaterial* planeMaterial = new Qt3DExtras::QPhongMaterial();
-    planeMaterial->setAmbient(QColor(Qt::yellow));
-    // Plane
-    Qt3DCore::QEntity* planeEntity = new Qt3DCore::QEntity(rootEntity);
-    planeEntity->addComponent(planeMesh);
-    planeEntity->addComponent(planeMaterial);
-    planeEntity->addComponent(planeTransform);
+void CalibrationTool::createCamera() {
+    // camera mesh
+    Qt3DExtras::QCuboidMesh* cameraMesh = new Qt3DExtras::QCuboidMesh();
+    cameraMesh->setXExtent(2);
+    // camera transform
+    Qt3DCore::QTransform* cameraTransform = new Qt3DCore::QTransform();
+    cameraTransform->setScale(2.0f);
+    cameraTransform->setTranslation(QVector3D(10.0f, 0.0f, 0.0f));
+    // camera material
+    Qt3DExtras::QPhongMaterial* cameraMaterial = new Qt3DExtras::QPhongMaterial();
+    cameraMaterial->setAmbient(QColor(Qt::yellow));
+    // camera
+    Qt3DCore::QEntity* cameraEntity = new Qt3DCore::QEntity(rootEntity);
+    cameraEntity->addComponent(cameraMesh);
+    cameraEntity->addComponent(cameraMaterial);
+    cameraEntity->addComponent(cameraTransform);
 }
 
 void CalibrationTool::createScale(Qt3DRender::QCamera* camera) {
@@ -949,16 +951,16 @@ void CalibrationTool::createScale(Qt3DRender::QCamera* camera) {
     vector<Qt3DCore::QTransform*> transforms;
     vector<QVector3D> transforms_ = {
         // x-Axis Scale
-        {-5.0f, -10.0f, 15.0f}, {0.0f, -10.0f, 15.0f}, {5.0f, -10.0f, 15.0f},
+        {-5.0f, -10.0f, 15.0f}, {0.0f, -10.0f, 15.0f}, {5.0f, -10.0f, 15.0f},{10.0f, -10.0f, 15.0f}, {15.0f, -10.0f, 15.0f},
         // y-Axis Scale
-        {-10.0f, -5.0f, 15.0f}, {-10.0f, 0.0f, 15.0f}, {-10.0f, 5.0f, 15.0f}, {-10.0f, 10.0f, 15.0f}, {-10.0f, 15.0f, 15.0f},
+        {-10.0f, -5.0f, 15.0f}, {-10.0f, 0.0f, 15.0f}, {-10.0f, 5.0f, 15.0f},
         // z-Axis Scale
         {15.0f, -10.0f, -5.0f}, {15.0f, -10.0f, 0.0f}, {15.0f, -10.0f, 5.0f},
     };
     vector<Qt3DExtras::QText2DEntity*> texts;
     vector<int> scales = {
+        15, 10, 5, 0,-5,
         -5, 0, 5,
-        -5, 0, 5, 10, 15,
         -5, 0, 5
     };
 
@@ -985,7 +987,7 @@ Qt3DCore::QEntity* CalibrationTool::createCuboid(QVector3D transformMatrix, QVec
     // Cuboid mesh
     Qt3DExtras::QCuboidMesh* cuboid = new Qt3DExtras::QCuboidMesh();
     cv::Size s = this->imageMatList[0].size();
-    cuboid->setXExtent(s.width / BASE_CUBOID_SCALE * CUBOID_SCALE_UNIT);
+    cuboid->setXExtent(s.width / BASE_CUBOID_SCALE * CUBOID_SCALE_UNIT*1.5);
     cuboid->setZExtent(0.1);
     cuboid->setYExtent(s.height / BASE_CUBOID_SCALE * CUBOID_SCALE_UNIT);
     // CuboidMesh Transform
@@ -1018,8 +1020,8 @@ void CalibrationTool::createPatternCentric() {
     rootEntity = new Qt3DCore::QEntity();
     // 创建 3D 相机
     Qt3DRender::QCamera* camera = view3D->camera();
-    camera->lens()->setPerspectiveProjection(50.0f, 16.0f / 9.0f, 0.1f, 1000.0f);
-    camera->setPosition(QVector3D(35.0f, 18.0f, 30.0f));
+    camera->lens()->setPerspectiveProjection(AXIS_ROTATION, 16.0f / 9.0f, 0.1f, 1000.0f);
+    camera->setPosition(QVector3D(40.0f, 18.0f, 30.0f));
     camera->setUpVector(QVector3D(0, 1, 0));
     camera->setViewCenter(QVector3D(0, 0, 0));
 
@@ -1028,18 +1030,6 @@ void CalibrationTool::createPatternCentric() {
     cameraController->setLinearSpeed(100.0f);  // 设置相机的线性速度
     cameraController->setLookSpeed(100.0f);  // 设置相机的旋转速度
     cameraController->setCamera(camera);
-
-    // Light
-    //Qt3DCore::QEntity* lightEntity = new Qt3DCore::QEntity(rootEntity);
-    //Qt3DRender::QPointLight* light = new Qt3DRender::QPointLight(lightEntity);
-    //light->setColor("white");
-    //light->setIntensity(1);
-
-    //lightEntity->addComponent(light);
-    //Qt3DCore::QTransform* lightTransform = new Qt3DCore::QTransform(lightEntity);
-    //lightTransform->setTranslation(camera->position());
-    ////lightTransform->setTranslation(QVector3D(0, 50, 0));
-    //lightEntity->addComponent(lightTransform);
 
     // 设置根实体
     view3D->setRootEntity(rootEntity);
@@ -1055,7 +1045,7 @@ void CalibrationTool::createPatternCentric() {
     // 创建 坐标轴
     createAxis();
     // 创建 标定板平面
-    createPlane();
+    createCamera();
     // 创建 刻度
     createScale(camera);
 
@@ -1069,31 +1059,17 @@ void CalibrationTool::addCuboidToCentric() {
         // 平移立方体
         QVector3D translation(
             static_cast<float>(this->calibResults.tvecs[i].at<double>(0, 0) * TRANSLATION_BASE_SCALE),
-            static_cast<float>(this->calibResults.tvecs[i].at<double>(1, 0) * TRANSLATION_BASE_SCALE + TRANSLATION_BASE_OFFSET),
-            static_cast<float>(this->calibResults.tvecs[i].at<double>(2, 0) * TRANSLATION_BASE_SCALE)
+            static_cast<float>(this->calibResults.tvecs[i].at<double>(1, 0) * TRANSLATION_BASE_SCALE),
+            static_cast<float>(this->calibResults.tvecs[i].at<double>(2, 0) * TRANSLATION_BASE_SCALE - TRANSLATION_BASE_OFFSET)
         );
 
         // 旋转立方体
         QVector3D rotationVector(
-            static_cast<float>(this->calibResults.rvecs[i].at<double>(0, 0) * MAX_RADIAN / PI + ROTATION_BASE_X_TRANSLATION),
-            static_cast<float>(this->calibResults.rvecs[i].at<double>(1, 0) * MAX_RADIAN / PI),
-            static_cast<float>(this->calibResults.rvecs[i].at<double>(2, 0) * MAX_RADIAN / PI)
+            static_cast<float>(this->calibResults.rvecs[i].at<double>(0, 0) * MAX_RADIAN / PI),
+            static_cast<float>(this->calibResults.rvecs[i].at<double>(1, 0) * MAX_RADIAN / PI - AXIS_ROTATION),
+            static_cast<float>(this->calibResults.rvecs[i].at<double>(2, 0) * MAX_RADIAN / PI + Z_ROTATION)
         );
         //QQuaternion rotation = QQuaternion::fromEulerAngles(rotationVector);
         this->cuboids.push_back(createCuboid(translation, rotationVector));
     }
-
-
-    //std::vector<double> temp11 = { 3.7255595916094270e-01, -3.2286315095976620e-01, 2.5998065119306002e+00 };
-    //std::vector<double> temp12 = { 6.1493345305296354e-01, 1.8370675629054839e-01, -3.0332846618352547e+00 };
-    //std::vector<double> temp13 = { -3.1328447296075423e-01, -1.8878982619689827e-01, 3.1227561623556346e+00 };
-    //std::vector<std::vector<double> > r = { temp11,temp12,temp13 };
-
-    //std::vector<double> temp21 = { 3.6222302556773556e-01, 1.8124125958992307e-01, 9.1641694205212221e-01 };
-    //std::vector<double> temp22 = { 5.1387812804136901e-02, 4.1264447962786516e-01, 1.2561808957122409e+00 };
-    //std::vector<double> temp23 = { 1.6484524415527824e-01, 7.4722399627735903e-01, 1.4310930451633073e+00 };
-    //std::vector<std::vector<double> > t = { temp21,temp22,temp23 };
-    /*cuboids.push_back(createCuboid(rootEntity,
-        QVector3D(3.6222302556773556e-01, 1.8124125958992307e-01 + 10, 9.1641694205212221e-01),
-        QVector3D(3.7255595916094270e-01*10 +90 , -3.2286315095976620e-01*10, 2.5998065119306002e+00*10)));*/
 }

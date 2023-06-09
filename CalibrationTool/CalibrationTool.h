@@ -68,7 +68,7 @@ private:
     void createBarChart(); // ª≠Ãı–ŒÕº
     void createPatternCentric();
     void createAxis();
-    void createPlane();
+    void createCamera();
     void createScale(Qt3DRender::QCamera* camera);
     Qt3DCore::QEntity* createCuboid(QVector3D transformMatrix, QVector3D rotationMatrix);
     void addCuboidToCentric();
@@ -95,6 +95,7 @@ private:
 
 private:
     bool showUndistored = false;
+    bool planeCreated = false;
     int maxNameIndex = 0;
     int clickedIndex = 0;
     QStringList fileNames;
