@@ -613,12 +613,12 @@ void CalibrationTool::clickToShow(int index) {
     }
     // 获取点击的图片
     if (!this->showUndistored) {
-        flipedFrame = this->imageMatList[index];
+        flipedFrame = this->imageMatList[index].clone();
         cv::drawChessboardCorners(flipedFrame, cv::Size(9, 6), corners, !corners.empty());
     }
     else
     {
-        flipedFrame = this->undistortedImageList[index];
+        flipedFrame = this->undistortedImageList[index].clone();
     }
 
     // 将抓取到的帧，转换为QImage格式。QImage::Format_RGB888不同的摄像头用不同的格式。
@@ -637,6 +637,7 @@ void CalibrationTool::clickToShow(int index) {
 }
 
 void CalibrationTool::clickToUndistort() {
+    this->undistortedImageList.clear();
     for (int i = 0; i < imageMatList.size(); i++) {
         qDebug() << "undistort " << i << endl;
         cv::Mat undistortedImg = imageMatList[i].clone();
